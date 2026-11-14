@@ -1,0 +1,21 @@
+// node tests/test-core.js  : checks ml-core.js against scikit-learn reference values
+global.self = global; require('../assets/data/wine.js'); require('../assets/data/digits.js');
+const ML = require('../assets/ml-core.js'); const ref = require('./reference_core.json');
+let fails = 0; const ok = (name, cond, extra) => { console.log((cond ? 'PASS ' : 'FAIL ') + name + (extra ? '  ' + extra : '')); if (!cond) fails++; };
+const maxdiff = (a, b) => Math.max(...a.map((v, i) => Math.abs(v - b[i])));
+const wine = ML.data.wine(), dig = ML.data.digits();
+let p = ML.pca(wine.X, { scale: false }); ok('wine unscaled PCA ratios', maxdiff(p.ratio, ref.wine_raw_ratio) < 1e-9, 'PC1=' + (100 * p.ratio[0]).toFixed(2) + '%');
+p = ML.pca(wine.X, { scale: true }); ok('wine standardised PCA ratios', maxdiff(p.ratio, ref.wine_std_ratio) < 1e-9, 'PC1=' + (100 * p.ratio[0]).toFixed(2) + '%');
+ok('wine standardised PC1 loadings (sign-matched)', maxdiff(Array.from(p.components[0]), ref.wine_std_pc1) < 1e-8 || maxdiff(Array.from(p.components[0]).map(v => -v), ref.wine_std_pc1) < 1e-8);
+let t0 = Date.now(); p = ML.pca(dig.X, { scale: false }); const dt = Date.now() - t0;
+ok('digits PCA ratios', maxdiff(p.ratio, ref.digits_ratio) < 1e-8, dt + ' ms'); ok('digits k for 95% = ' + ref.digits_k95, p.kFor(0.95) === ref.digits_k95, 'got ' + p.kFor(0.95));
+const rec = ML.pca(dig.X).reconstruct(dig.X[0], 10); ok('reconstruction (k=10, first image)', maxdiff(Array.from(rec), ref.digits_rec_first5_k10[0]) < 1e-8);
+const sub = wine.X.slice(0, 60).map(r => Array.from(r).slice(0, 5)), mu = ML.colMeans(sub), cen = sub.map(r => r.map((v, j) => v - mu[j]));
+const sv = ML.svd(cen), C = ML.pca(sub);
+ok('one-sided Jacobi SVD: s^2/(n-1) equals covariance eigenvalues', maxdiff(sv.s.map(v => v * v / 59), Array.from(C.values)) < 1e-8 * C.values[0]);
+ok('one-sided Jacobi SVD: right singular vectors equal eigenvectors', sv.Vt.every((v, i) => maxdiff(Array.from(v), Array.from(C.components[i])) < 1e-7));
+const tw = ref.tw; ok('trustworthiness (PCA map)', Math.abs(ML.trustworthiness(tw.X, tw.E_pca, 10) - tw.tw_pca) < 1e-9, ML.trustworthiness(tw.X, tw.E_pca, 10).toFixed(4) + ' vs ' + tw.tw_pca.toFixed(4));
+ok('trustworthiness (random map)', Math.abs(ML.trustworthiness(tw.X, tw.E_rand, 10) - tw.tw_rand) < 1e-9);
+const folds = ML.stratifiedFolds(wine.y, 5).map(f => f.slice().sort((a, b) => a - b));
+ok('stratified folds identical to scikit-learn', JSON.stringify(folds) === JSON.stringify(ref.wine_folds));
+process.exit(fails ? 1 : 0);

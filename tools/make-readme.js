@@ -1,0 +1,66 @@
+// node tools/make-readme.js : regenerates README.md (the catalogue table comes from assets/sims.js)
+const fs = require('fs'), path = require('path');
+global.window = {}; require('../assets/sims.js'); const S = window.SIMS;
+const strip = (h) => h.replace(/<[^>]+>/g, '');
+let table = '';
+for (const cat of S.categories) {
+  table += `\n### ${cat.name} (Session ${cat.session})\n\n${cat.blurb}\n\n| Simulation | What it shows |\n|---|---|\n`;
+  for (const it of S.items.filter((x) => x.cat === cat.id)) table += `| [${it.title}](${it.cat}/${it.slug}/) | ${strip(it.blurb)} |\n`;
+}
+const md = `# Advanced ML (ML II): interactive simulations
+
+${S.items.length} interactive, in-browser simulations for **Advanced Machine Learning (ML II)**, B.Tech AIML, Year 2, Term 2. They cover the live Python segments of **Sessions 1 to 4**: PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression and the one-class SVM.
+
+**Live site:** https://amulyavarshney.github.io/simulations/
+
+Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list, a "Try this" list and a pointer to the session slide or notebook step it comes from. Some pages start with a "predict first" question that matches an in-class poll.
+
+## Catalogue
+${table}
+## How it is built
+
+- **Plain static files.** HTML, CSS and vanilla JavaScript with canvas. No framework, no build step, no dependencies, and no network requests, so it also works offline: open \`index.html\` in a browser or serve the folder.
+- **The algorithms are real.** \`assets/ml-core.js\` (PCA, SVD, trustworthiness, cross-validation folds), \`assets/ml-svm.js\` (a libsvm-style SMO solver behind SVC, epsilon-SVR and one-class SVM, plus logistic regression and TF-IDF) and \`assets/ml-embed.js\` (t-SNE and UMAP) are small and readable.
+- **Colour and accessibility.** Series colours come from a palette checked for colour-blind separation in light and dark mode; classes also differ by marker shape. Every page works on a phone, respects the system dark-mode and reduced-motion settings, and has keyboard-operable controls.
+
+## How the numbers are checked
+
+\`tests/\` compares the JavaScript against scikit-learn on stored reference values:
+
+\`\`\`sh
+./tests/run-all.sh        # needs only Node.js
+\`\`\`
+
+- **PCA, SVD, trustworthiness, stratified folds:** agree with scikit-learn to rounding error (wine: 99.81% of variance on PC1 unscaled and 36.20% standardised; digits: 29 components for 95%).
+- **SVC, SVR, one-class SVM:** same number of support vectors and decision values within about 4e-4 of scikit-learn at the same tolerance.
+- **Logistic regression:** coefficients agree to 1e-8; the wine cross-validation curve agrees to within one validation sample.
+- **t-SNE:** the affinity matrix matches scikit-learn to 1e-10 and the first iterations follow its update rule. t-SNE is chaotic, so beyond a few iterations only quality (final KL divergence, trustworthiness) can be compared, not exact positions.
+- **UMAP** is a compact re-implementation of the published recipe (smooth-kNN graph, fuzzy union, spectral start, edge-sampled SGD, transform of new points), **not** the \`umap-learn\` package, and is not bit-identical to it. Its curve parameters match SciPy's curve fit, and its graph and layout are checked by property tests.
+
+To regenerate the reference values (needs Python with numpy, scipy, scikit-learn): \`python3 tests/make_reference_core.py\`, \`make_reference_svm.py\` and \`make_reference_embed.py\`.
+
+## Run it locally
+
+\`\`\`sh
+python3 -m http.server 8000      # then open http://localhost:8000/
+\`\`\`
+
+## Deploy to GitHub Pages
+
+The repository is named \`simulations\`, so GitHub Pages serves it at \`https://<user>.github.io/simulations/\` next to a user site of the same account. In the repository on GitHub: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: \`main\` / \`(root)\`**. The empty \`.nojekyll\` file turns off Jekyll processing. All links are relative, so the site works from any path.
+
+## Adding a simulation
+
+1. Add an entry to \`assets/sims.js\` (category, slug, title, text, the extra libraries it needs).
+2. Create \`<category>/<slug>/sim.js\`; copy a similar page for the pattern (\`UI.shell(id)\` builds the page, \`UI.Plot\` draws).
+3. Run \`node tools/make-pages.js\` to write the page's \`index.html\`, then \`node tools/make-readme.js\` to refresh this table.
+
+## Data and credits
+
+- UCI **Wine** recognition data (Forina et al., 1991) and UCI **Optical Recognition of Handwritten Digits** (Alpaydin & Kaynak), both CC BY 4.0, loaded through scikit-learn and embedded in \`assets/data/\`.
+- The customer-message corpus in the text simulation is made up for this course.
+- Session 3 and 4 pages point to pre-class viewing from StatQuest (Josh Starmer) on support vector machines. The videos are cited, not reproduced; the examples and code here are original.
+
+No licence file has been added yet; choose one before inviting reuse.
+`;
+fs.writeFileSync(path.join(__dirname, '..', 'README.md'), md); console.log('README.md written,', md.length, 'chars');
