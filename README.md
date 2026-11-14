@@ -112,4 +112,6 @@ The repository is named `simulations`, so GitHub Pages serves it at `https://<us
 - The customer-message corpus in the text simulation is made up for this course.
 - Session 3 and 4 pages point to pre-class viewing from StatQuest (Josh Starmer) on support vector machines. The videos are cited, not reproduced; the examples and code here are original.
 
-No licence file has been added yet; choose one before inviting reuse.
+## Licence
+
+The code, the page text and the made-up message corpus are released under the [MIT licence](LICENSE). The embedded datasets keep their own licences (CC BY 4.0, see above).
