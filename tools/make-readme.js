@@ -4,16 +4,16 @@ global.window = {}; require('../assets/sims.js'); const S = window.SIMS;
 const strip = (h) => h.replace(/<[^>]+>/g, '');
 let table = '';
 for (const cat of S.categories) {
-  table += `\n### ${cat.name} (Session ${cat.session})\n\n${cat.blurb}\n\n| Simulation | What it shows |\n|---|---|\n`;
+  table += `\n### ${cat.name}\n\n${cat.blurb}\n\n| Simulation | What it shows |\n|---|---|\n`;
   for (const it of S.items.filter((x) => x.cat === cat.id)) table += `| [${it.title}](${it.cat}/${it.slug}/) | ${strip(it.blurb)} |\n`;
 }
-const md = `# Advanced ML (ML II): interactive simulations
+const md = `# Interactive machine learning simulations
 
-${S.items.length} interactive, in-browser simulations for **Advanced Machine Learning (ML II)**, B.Tech AIML, Year 2, Term 2. They cover the live Python segments of **Sessions 1 to 4**: PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression and the one-class SVM.
+${S.items.length} interactive, in-browser simulations covering PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression and the one-class SVM.
 
 **Live site:** https://amulyavarshney.github.io/simulations/
 
-Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list, a "Try this" list and a pointer to the session slide or notebook step it comes from. Some pages start with a "predict first" question that matches an in-class poll.
+Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list and a "Try this" list. Some pages start with a "predict first" question.
 
 ## Catalogue
 ${table}
@@ -58,8 +58,8 @@ The repository is named \`simulations\`, so GitHub Pages serves it at \`https://
 ## Data and credits
 
 - UCI **Wine** recognition data (Forina et al., 1991) and UCI **Optical Recognition of Handwritten Digits** (Alpaydin & Kaynak), both CC BY 4.0, loaded through scikit-learn and embedded in \`assets/data/\`.
-- The customer-message corpus in the text simulation is made up for this course.
-- Session 3 and 4 pages point to pre-class viewing from StatQuest (Josh Starmer) on support vector machines. The videos are cited, not reproduced; the examples and code here are original.
+- The customer-message corpus in the text simulation is made up.
+- Some of the SVM pages point to StatQuest (Josh Starmer) videos on support vector machines as background viewing. The videos are cited, not reproduced; the examples and code here are original.
 
 ## Licence
 

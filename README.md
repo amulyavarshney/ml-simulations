@@ -1,14 +1,14 @@
-# Advanced ML (ML II): interactive simulations
+# Interactive machine learning simulations
 
-25 interactive, in-browser simulations for **Advanced Machine Learning (ML II)**, B.Tech AIML, Year 2, Term 2. They cover the live Python segments of **Sessions 1 to 4**: PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression and the one-class SVM.
+25 interactive, in-browser simulations covering PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression and the one-class SVM.
 
 **Live site:** https://amulyavarshney.github.io/simulations/
 
-Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list, a "Try this" list and a pointer to the session slide or notebook step it comes from. Some pages start with a "predict first" question that matches an in-class poll.
+Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list and a "Try this" list. Some pages start with a "predict first" question.
 
 ## Catalogue
 
-### PCA in practice (Session 1)
+### PCA in practice
 
 Variance, scaling, choosing the number of components, reconstruction, denoising and PCA inside a cross-validated pipeline.
 
@@ -20,7 +20,7 @@ Variance, scaling, choosing the number of components, reconstruction, denoising 
 | [Reconstruct and denoise digits](pca/denoising/) | Noise spreads over all 64 directions while a digit's shape lives in the top few. Keep only the leading components and much of the noise drops out. |
 | [Tune k by cross-validation, inside the pipeline (wine)](pca/pipeline-cv/) | Scale, then PCA, then logistic regression, each step fitted on the training folds only. Sweep k, read the accuracy curve with its spread, and compare with the leaky shortcut. |
 
-### Nonlinear embeddings: t-SNE and UMAP (Session 2)
+### Nonlinear embeddings: t-SNE and UMAP
 
 Why linear maps miss curved structure, what perplexity and n_neighbors do, and how to read these plots without fooling yourself.
 
@@ -33,7 +33,7 @@ Why linear maps miss curved structure, what perplexity and n_neighbors do, and h
 | [UMAP: n_neighbors and min_dist](embeddings/umap-settings/) | n_neighbors sets how large a neighbourhood UMAP looks at; min_dist sets how tightly points may pack in the map. Change them, switch on the neighbour graph, and see what each one controls. |
 | [UMAP places new points; t-SNE cannot](embeddings/new-points/) | UMAP learns a mapping, so unseen digits can be placed on an existing map. t-SNE has no such step: to add points you refit, and the old points move. |
 
-### SVM I: maximum margin (Session 3)
+### SVM I: maximum margin
 
 The widest street, support vectors, the soft margin and C, hinge loss against log-loss, scaling, and a linear SVM on text.
 
@@ -46,7 +46,7 @@ The widest street, support vectors, the soft margin and C, hinge loss against lo
 | [Why SVMs need scaled features](svm-margin/scaling/) | The margin is measured in raw feature units, so the units you pick change the answer. Put the informative feature in tiny units and an unscaled SVM stops using it; standardise first and the answer no longer depends on units. |
 | [A linear SVM on text (TF-IDF)](svm-margin/text/) | Turn sentences into TF-IDF vectors, fit a linear SVM, and see which words push a message towards billing or technical support. Type your own sentence to see the score broken down word by word. |
 
-### SVM II: kernels (Session 4)
+### SVM II: kernels
 
 Lifting to higher dimensions, the kernel trick, polynomial and RBF kernels, the weighted-vote view, and tuning C with gamma.
 
@@ -58,7 +58,7 @@ Lifting to higher dimensions, the kernel trick, polynomial and RBF kernels, the 
 | [The RBF score as a weighted vote](svm-kernels/rbf-vote/) | On a number line the RBF score is easy to see: each support vector adds a bump of height α·y, the bumps add up, and the offset b shifts the total. Drag the probe and read every vote. |
 | [Tune C and γ together](svm-kernels/c-gamma-grid/) | Every cell of the grid is an RBF SVM trained with one (C, γ) pair and scored on held-out points. Click a cell to see its boundary. The good region is a band, not a point. |
 
-### SVM II: regression, anomalies and cost (Session 4)
+### SVM II: regression, anomalies and cost
 
 Support vector regression and the epsilon-tube, the one-class SVM, and what training costs as data grows.
 
@@ -109,8 +109,8 @@ The repository is named `simulations`, so GitHub Pages serves it at `https://<us
 ## Data and credits
 
 - UCI **Wine** recognition data (Forina et al., 1991) and UCI **Optical Recognition of Handwritten Digits** (Alpaydin & Kaynak), both CC BY 4.0, loaded through scikit-learn and embedded in `assets/data/`.
-- The customer-message corpus in the text simulation is made up for this course.
-- Session 3 and 4 pages point to pre-class viewing from StatQuest (Josh Starmer) on support vector machines. The videos are cited, not reproduced; the examples and code here are original.
+- The customer-message corpus in the text simulation is made up.
+- Some of the SVM pages point to StatQuest (Josh Starmer) videos on support vector machines as background viewing. The videos are cited, not reproduced; the examples and code here are original.
 
 ## Licence
 
