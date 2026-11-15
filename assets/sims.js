@@ -434,7 +434,7 @@ window.SIMS = {
         "Press <i>New data</i> several times. Does the 5-fold average land on the orange dashed line each time?",
         "Press <i>Draw the splits again</i>. Which histogram changes shape, and which stays almost the same?",
 ],
-      from: "Session 5 · the hold-out split against cross-validation (why one split is a lottery).",
+      from: "Session 5 · slides 8 to 12 (Poll 1 and the lottery of splits, K-fold, the numbers on how much averaging helps).",
     },
     {
       cat: 'evaluation', slug: 'split-schemes', session: 5, title: "Choose the folds that match the data", short: "Choosing fold schemes", libs: ['svm', 'eval', 'evalui'],
@@ -454,7 +454,7 @@ window.SIMS = {
         "On <i>Rare positive class</i>, press <i>New rows and new shuffle</i> five times and count how often shuffled K-fold leaves a fold with no positives.",
         "Hover a cell in the first strip, then find the same row in each scheme.",
 ],
-      from: "Session 5 · the split schemes and leakage parts (K-fold, stratified, group and time-series splits).",
+      from: "Session 5 · slides 14 to 16 and 19 to 20 (the four split schemes, the scheme chooser, stratification).",
     },
     {
       cat: 'evaluation', slug: 'random-vs-real', session: 5, title: "Random folds vs the real world", short: "Random folds vs the real world", libs: ['svm', 'eval', 'evalui'],
@@ -474,7 +474,7 @@ window.SIMS = {
         "Press <i>New data</i> a few times at 270°. Which honest number stays closer to the real one?",
         "Ask yourself in each scenario: what will the model really face on the day, and does my fold scheme copy that?",
 ],
-      from: "Session 5 · group K-fold and the time-series split (random folds against what really happens).",
+      from: "Session 5 · slides 17 and 18 (group leakage, and drift with the time split).",
     },
     {
       cat: 'evaluation', slug: 'preprocessing-leak', session: 5, title: "Noise can score 90%: selecting features before cross-validation", short: "Selecting features before CV", libs: ['svm', 'eval', 'evalui'],
@@ -494,7 +494,7 @@ window.SIMS = {
         "Drag n up to 300 and down to 50. What does a small n do to the wrong-way score?",
         "Press <i>Run again</i>. Which spread of dots moves more from run to run?",
 ],
-      from: "Session 5 · leakage through preprocessing (feature selection inside the pipeline).",
+      from: "Session 5 · slides 21 to 27 (the two doors of leakage, Poll 2, the pipeline fix, how big the leak is).",
     },
     {
       cat: 'evaluation', slug: 'target-leak', session: 5, title: "The churn model with 0.99 AUC that falls to 0.7 in use", short: "Churn model with a leaky column", libs: ['svm', 'eval', 'evalui'],
@@ -514,7 +514,7 @@ window.SIMS = {
         "Switch the ROC plot between offline and live. Which curve moves?",
         "For each of the eight columns ask: would I know this value at the moment I make the prediction?",
 ],
-      from: "Session 5 · leakage through features (target leakage and what a time split cannot catch).",
+      from: "Session 5 · slides 28 to 30 (target leakage, the churn case, the five checks).",
     },
     {
       cat: 'evaluation', slug: 'search-strategies', session: 5, title: "Grid, random and smart search under a budget", short: "Grid, random and smart search", libs: ['svm', 'eval', 'evalui'],
@@ -534,7 +534,7 @@ window.SIMS = {
         "Switch to rings, or press <i>New data</i>. Does the grid stay lucky?",
         "Look at the maps. Which strategy puts its pairs near the good band once it has seen a few results?",
 ],
-      from: "Session 5 · tuning without fooling yourself (grid, random and sequential search under a budget).",
+      from: "Session 5 · slides 34 to 41 (grid, random and Optuna search under a budget, and the recipe).",
     },
     {
       cat: 'evaluation', slug: 'nested-cv', session: 5, title: "The best score you picked is not the score you will get", short: "Best score vs nested CV", libs: ['svm', 'eval', 'evalui'],
@@ -554,7 +554,7 @@ window.SIMS = {
         "Set n to 40, then 200. Where is the winner’s curse bigger?",
         "Press <i>New datasets</i> a few times. Does the nested estimate stay close to the truth on average?",
 ],
-      from: "Session 5 · tuning without fooling yourself (nested cross-validation and the winner’s curse).",
+      from: "Session 5 · slides 42 to 47 (Poll 3, the winner’s curse, nested cross-validation and its cost).",
     },
     {
       cat: 'evaluation', slug: 'validation-curve', session: 5, title: "Complexity: where the validation score turns", short: "Validation curve", libs: ['svm', 'eval', 'evalui'],
@@ -574,7 +574,7 @@ window.SIMS = {
         "Drop n to 60 and then raise it to 300. What happens to the gap on the right?",
         "Set the noise to 0.05 and then 0.5. Does the best γ change?",
 ],
-      from: "Session 5 · reading validation curves (complexity, bias and variance).",
+      from: "Session 5 · slide 48 (the validation curve) and slide 50 (diagnosis).",
     },
     {
       cat: 'evaluation', slug: 'learning-curve', session: 5, title: "Would more data help?", short: "Learning curve", libs: ['svm', 'eval', 'evalui'],
@@ -594,7 +594,7 @@ window.SIMS = {
         "Raise the noise to 0.5 for each model in turn. What happens to the ceiling?",
         "Switch to rings with the simple model. Why is the training score so low?",
 ],
-      from: "Session 5 · reading learning curves (would more data help?).",
+      from: "Session 5 · slides 49 and 50 (learning curves and diagnosis).",
     },
   ],
 };

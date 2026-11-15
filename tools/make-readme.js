@@ -20,7 +20,7 @@ ${table}
 ## How it is built
 
 - **Plain static files.** HTML, CSS and vanilla JavaScript with canvas. No framework, no build step, no dependencies, and no network requests, so it also works offline: open \`index.html\` in a browser or serve the folder.
-- **The algorithms are real.** \`assets/ml-core.js\` (PCA, SVD, trustworthiness, cross-validation folds), \`assets/ml-svm.js\` (a libsvm-style SMO solver behind SVC, epsilon-SVR and one-class SVM, plus logistic regression and TF-IDF) \`assets/ml-embed.js\` (t-SNE and UMAP) and \`assets/ml-eval.js\` (fold schemes, AUC, feature selection, nested cross-validation, a compact TPE sampler and the Session 5 data generators) are small and readable.
+- **The algorithms are real.** \`assets/ml-core.js\` (PCA, SVD, trustworthiness, cross-validation folds), \`assets/ml-svm.js\` (a libsvm-style SMO solver behind SVC, epsilon-SVR and one-class SVM, plus logistic regression and TF-IDF) \`assets/ml-embed.js\` (t-SNE and UMAP) and \`assets/ml-eval.js\` (fold schemes, AUC, feature selection, nested cross-validation, a compact TPE sampler and the data generators for the evaluation pages) are small and readable.
 - **Colour and accessibility.** Series colours come from a palette checked for colour-blind separation in light and dark mode; classes also differ by marker shape. Every page works on a phone, respects the system dark-mode and reduced-motion settings, and has keyboard-operable controls.
 
 ## How the numbers are checked
@@ -61,7 +61,7 @@ One-time setup in the repository on GitHub: **Settings → Pages → Build and d
 ## Data and credits
 
 - UCI **Wine** recognition data (Forina et al., 1991) and UCI **Optical Recognition of Handwritten Digits** (Alpaydin & Kaynak), both CC BY 4.0, loaded through scikit-learn and embedded in \`assets/data/\`.
-- The customer-message corpus in the text simulation, and the churn table and customer data in the Session 5 pages, are made up (generated in your browser).
+- The customer-message corpus in the text simulation, and the churn table and customer data in the evaluation pages, are made up (generated in your browser).
 - Some of the SVM pages point to StatQuest (Josh Starmer) videos on support vector machines as background viewing. The videos are cited, not reproduced; the examples and code here are original.
 
 ## Licence
