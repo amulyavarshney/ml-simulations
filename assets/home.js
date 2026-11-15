@@ -12,7 +12,7 @@
   const hero = h('div', { class: 'hero' }, h('div', { class: 'badges' }, h('span', { class: 'badge session', text: 'Sessions 1 to 4' }), h('span', { class: 'badge', text: total + ' simulations' })),
     h('h1', { text: 'Advanced Machine Learning: interactive simulations' }),
     h('p', { text: 'Drag points, move sliders and watch PCA, t-SNE, UMAP and support vector machines respond. Each page is one idea from the live Python segment of a session, running entirely in your browser with the same algorithms the notebooks call.' }),
-    h('p', { class: 'note', html: 'Numerical cores (PCA, SMO-based SVC / SVR / one-class SVM, logistic regression, t-SNE) are checked against scikit-learn in <a href="https://github.com/amulyavarshney/simulations/tree/main/tests">tests/</a>; the UMAP is a compact re-implementation. Course: B.Tech AIML, Year 2, Term 2.' }));
+    h('p', { class: 'note', html: 'Numerical cores (PCA, SMO-based SVC / SVR / one-class SVM, logistic regression, t-SNE) are checked against scikit-learn in <a href="https://github.com/amulyavarshney/ml-simulations/tree/main/tests">tests/</a>; the UMAP is a compact re-implementation. Course: B.Tech AIML, Year 2, Term 2.' }));
   const chips = h('div', { class: 'filters', role: 'group', 'aria-label': 'Filter by session' });
   const sessions = ['all', '1', '2', '3', '4'];
   const chipEls = sessions.map((s) => { const b = h('button', { class: 'chip', type: 'button', 'aria-pressed': s === 'all' ? 'true' : 'false', text: s === 'all' ? 'All sessions' : 'Session ' + s, onclick() { session = s; chipEls.forEach((c, i) => c.setAttribute('aria-pressed', sessions[i] === s ? 'true' : 'false')); render(); } }); chips.append(b); return b; });

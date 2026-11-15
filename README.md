@@ -2,7 +2,7 @@
 
 25 interactive, in-browser simulations covering PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression and the one-class SVM.
 
-**Live site:** https://amulyavarshney.github.io/simulations/
+**Live site:** https://amulyavarshney.github.io/ml-simulations/
 
 Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list and a "Try this" list. Some pages start with a "predict first" question.
 
@@ -98,7 +98,9 @@ python3 -m http.server 8000      # then open http://localhost:8000/
 
 ## Deploy to GitHub Pages
 
-The repository is named `simulations`, so GitHub Pages serves it at `https://<user>.github.io/simulations/` next to a user site of the same account. In the repository on GitHub: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `(root)`**. The empty `.nojekyll` file turns off Jekyll processing. All links are relative, so the site works from any path.
+The site is deployed by GitHub Actions (`.github/workflows/pages.yml`). On every push to `main` it runs the numerical checks in `tests/` and, if they pass, publishes the site. The tests and tooling are left out of the published files. You can also start it by hand from the **Actions** tab (**Run workflow**).
+
+One-time setup in the repository on GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site is then served at `https://<user>.github.io/<repository>/`. All links are relative, so it works from any path, including after a rename.
 
 ## Adding a simulation
 
