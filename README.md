@@ -1,6 +1,6 @@
 # Interactive machine learning simulations
 
-25 interactive, in-browser simulations covering PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression and the one-class SVM.
+34 interactive, in-browser simulations covering PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression, the one-class SVM, and model evaluation (validation, leakage and tuning).
 
 **Live site:** https://amulyavarshney.github.io/ml-simulations/
 
@@ -68,10 +68,26 @@ Support vector regression and the epsilon-tube, the one-class SVM, and what trai
 | [One-class SVM and ν](svm-beyond/one-class/) | Fit a boundary around normal data only, with no labels. The parameter ν says how much of the training data may fall outside, and it also bounds the number of support vectors. |
 | [Training cost grows roughly with n² (and what to use instead)](svm-beyond/cost-and-choice/) | Time an RBF SVM as the data grows and fit the exponent, then compare it with a linear model and a decision tree on the same data. Measured in your browser, so absolute times differ from scikit-learn. |
 
+### Model evaluation I: validation, leakage and tuning
+
+Why one split is a lottery, choosing folds that match the data, leakage through preprocessing and through features, tuning without fooling yourself, and reading learning and validation curves.
+
+| Simulation | What it shows |
+|---|---|
+| [One test set is one draw of the lottery](evaluation/split-lottery/) | The same data and the same model, scored by 200 different random splits, by 5-fold cross-validation and by repeated 5-fold. A single hold-out number can be far off when the data is small; averaging over folds steadies it. |
+| [Choose the folds that match the data](evaluation/split-schemes/) | K-fold, stratified, group and time-series splits drawn row by row. Pick the kind of data and see what each scheme gets wrong: the class share in each test fold, groups on both sides, and test rows from before the training rows. |
+| [Random folds vs the real world](evaluation/random-vs-real/) | Two ways a random split flatters a model: customers with several rows each, and a relationship that drifts over time. Compare random folds with honest folds and with what you really get on new customers or on the future. |
+| [Noise can score 90%: selecting features before cross-validation](evaluation/preprocessing-leak/) | The labels are coin flips and every feature is noise, yet choosing features on all the rows before cross-validation scores far above 50%. Choose them inside each training fold and the score falls back to 50%. |
+| [The churn model with 0.99 AUC that falls to 0.7 in use](evaluation/target-leak/) | A made-up churn table in which three columns are written by the churn event itself. Scored on the table they give 0.99 AUC however you split it; scored on the day before customers decide, the same model falls to about 0.7. |
+| [Grid, random and smart search under a budget](evaluation/search-strategies/) | Train a fixed number of RBF SVMs chosen by a grid, by seeded random search and by a compact TPE sampler, on a table of C and γ scores. See which values each one tries, and how big the difference in the best score really is. |
+| [The best score you picked is not the score you will get](evaluation/nested-cv/) | Choose the best of m settings by 5-fold CV and the score you report is flattered by the choice. Nested cross-validation and fresh data show what the chosen model really delivers, over many simulated datasets. |
+| [Complexity: where the validation score turns](evaluation/validation-curve/) | One complexity knob, the RBF width γ, plotted against the training score and the 5-fold CV score. Move γ and see the boundary go from too smooth to too wiggly, with a plain diagnosis for each zone. |
+| [Would more data help?](evaluation/learning-curve/) | Hold the model fixed and grow the training set: plot the training and the CV score. A big gap that shrinks asks for more data; two low curves that agree ask for a richer model; two high curves that agree mean you are done. |
+
 ## How it is built
 
 - **Plain static files.** HTML, CSS and vanilla JavaScript with canvas. No framework, no build step, no dependencies, and no network requests, so it also works offline: open `index.html` in a browser or serve the folder.
-- **The algorithms are real.** `assets/ml-core.js` (PCA, SVD, trustworthiness, cross-validation folds), `assets/ml-svm.js` (a libsvm-style SMO solver behind SVC, epsilon-SVR and one-class SVM, plus logistic regression and TF-IDF) and `assets/ml-embed.js` (t-SNE and UMAP) are small and readable.
+- **The algorithms are real.** `assets/ml-core.js` (PCA, SVD, trustworthiness, cross-validation folds), `assets/ml-svm.js` (a libsvm-style SMO solver behind SVC, epsilon-SVR and one-class SVM, plus logistic regression and TF-IDF) `assets/ml-embed.js` (t-SNE and UMAP) and `assets/ml-eval.js` (fold schemes, AUC, feature selection, nested cross-validation, a compact TPE sampler and the Session 5 data generators) are small and readable.
 - **Colour and accessibility.** Series colours come from a palette checked for colour-blind separation in light and dark mode; classes also differ by marker shape. Every page works on a phone, respects the system dark-mode and reduced-motion settings, and has keyboard-operable controls.
 
 ## How the numbers are checked
@@ -85,6 +101,7 @@ Support vector regression and the epsilon-tube, the one-class SVM, and what trai
 - **PCA, SVD, trustworthiness, stratified folds:** agree with scikit-learn to rounding error (wine: 99.81% of variance on PC1 unscaled and 36.20% standardised; digits: 29 components for 95%).
 - **SVC, SVR, one-class SVM:** same number of support vectors and decision values within about 4e-4 of scikit-learn at the same tolerance.
 - **Logistic regression:** coefficients agree to 1e-8; the wine cross-validation curve agrees to within one validation sample.
+- **Model evaluation:** the fold assignments of K-fold, stratified K-fold, group K-fold and the time-series split are identical to scikit-learn on stored inputs; the rank-based AUC and the ROC curve equal `roc_auc_score` and `roc_curve`; the F statistics and selected columns equal `f_classif` and `SelectKBest`; nearest centroid and k-nearest neighbours give the same predictions as scikit-learn. Property tests check that selection inside the folds stays near 50% on noise, that nested CV is below the best CV score on noise, and that the compact TPE beats random search on a smooth test function.
 - **t-SNE:** the affinity matrix matches scikit-learn to 1e-10 and the first iterations follow its update rule. t-SNE is chaotic, so beyond a few iterations only quality (final KL divergence, trustworthiness) can be compared, not exact positions.
 - **UMAP** is a compact re-implementation of the published recipe (smooth-kNN graph, fuzzy union, spectral start, edge-sampled SGD, transform of new points), **not** the `umap-learn` package, and is not bit-identical to it. Its curve parameters match SciPy's curve fit, and its graph and layout are checked by property tests.
 
@@ -111,7 +128,7 @@ One-time setup in the repository on GitHub: **Settings → Pages → Build and d
 ## Data and credits
 
 - UCI **Wine** recognition data (Forina et al., 1991) and UCI **Optical Recognition of Handwritten Digits** (Alpaydin & Kaynak), both CC BY 4.0, loaded through scikit-learn and embedded in `assets/data/`.
-- The customer-message corpus in the text simulation is made up.
+- The customer-message corpus in the text simulation, and the churn table and customer data in the Session 5 pages, are made up (generated in your browser).
 - Some of the SVM pages point to StatQuest (Josh Starmer) videos on support vector machines as background viewing. The videos are cited, not reproduced; the examples and code here are original.
 
 ## Licence

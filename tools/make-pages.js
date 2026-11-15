@@ -2,15 +2,15 @@
 // (each page is the same small shell; the behaviour lives in that folder's sim.js)
 const fs = require('fs'), path = require('path');
 global.window = {}; require('../assets/sims.js'); const S = window.SIMS;
-const LIB = { core: 'ml-core.js', svm: 'ml-svm.js', embed: 'ml-embed.js', wine: 'data/wine.js', digits: 'data/digits.js', embedui: 'embed-ui.js', svmui: 'svm-ui.js' };
-const AFTER_UI = ['embedui', 'svmui'];
+const LIB = { core: 'ml-core.js', svm: 'ml-svm.js', embed: 'ml-embed.js', wine: 'data/wine.js', digits: 'data/digits.js', embedui: 'embed-ui.js', svmui: 'svm-ui.js', eval: 'ml-eval.js', evalui: 'eval-ui.js' };
+const AFTER_UI = ['embedui', 'svmui', 'evalui'];
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/<[^>]+>/g, '');
 let made = 0;
 for (const it of S.items) {
   const dir = path.join(__dirname, '..', it.cat, it.slug); const simjs = path.join(dir, 'sim.js');
   if (!fs.existsSync(simjs)) { console.log('skip (no sim.js):', it.id); continue; }
   const libs = ['core', ...(it.libs || [])].filter((v, i, a) => a.indexOf(v) === i);
-  const order = ['core', 'wine', 'digits', 'svm', 'embed']; libs.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  const order = ['core', 'wine', 'digits', 'svm', 'embed', 'eval']; libs.sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const pre = libs.filter((l) => !AFTER_UI.includes(l)), post = libs.filter((l) => AFTER_UI.includes(l));
   const scripts = ['sims.js', ...pre.map((l) => LIB[l]), 'ui.js', ...post.map((l) => LIB[l])].map((f) => `<script src="../../assets/${f}" defer></script>`).join('\n');
   const html = `<!doctype html>

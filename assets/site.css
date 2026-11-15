@@ -111,9 +111,11 @@ dl.read dd.good { color: var(--good); } dl.read dd.warn { color: var(--warn); } 
 .legend svg { width: 14px; height: 14px; flex: none; }
 .progress { height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; margin-top: 6px; }
 .progress > i { display: block; height: 100%; width: 0; background: var(--c1); transition: width .1s linear; }
+div.tablewrap { overflow-x: auto; max-width: 100%; }
 table.t { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
 table.t th, table.t td { text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--line); }
 table.t th:first-child, table.t td:first-child { text-align: left; }
+table.t td.good { color: var(--good); font-weight: 700; } table.t td.warn { color: var(--warn); font-weight: 700; } table.t td.bad { color: var(--bad); font-weight: 700; }
 table.t th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
 .mono { font-family: var(--mono); font-size: 13px; }
 .predict { border: 2px dashed var(--axis); border-radius: var(--radius); padding: 12px 14px; background: var(--card); }

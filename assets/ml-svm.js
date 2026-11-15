@@ -177,7 +177,7 @@
     opts = opts || {}; const C = opts.C == null ? 1 : opts.C, n = X.length, d = X[0].length;
     const y = Array.from(yRaw, (v) => (v > 0 ? 1 : -1)); let w = new Float64Array(d + 1);
     const obj = (w) => { let s = 0; for (let i = 0; i < n; i++) { let z = w[d]; for (let j = 0; j < d; j++) z += w[j] * X[i][j]; const m = -y[i] * z; s += C * (m > 30 ? m : Math.log1p(Math.exp(m))); } for (let j = 0; j < d; j++) s += 0.5 * w[j] * w[j]; return s; };
-    for (let it = 0; it < 100; it++) {
+    for (let it = 0; it < (opts.maxIter || 100); it++) {
       const g = new Float64Array(d + 1), H = Array.from({ length: d + 1 }, () => new Float64Array(d + 1));
       for (let j = 0; j < d; j++) { g[j] = w[j]; H[j][j] = 1; }
       for (let i = 0; i < n; i++) {
