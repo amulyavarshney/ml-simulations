@@ -619,7 +619,7 @@ window.SIMS = {
         "Choose the SVM. Why are there no dots above 0.85?",
         "Move the number of bins from 5 to 20. Which readout changes, and why?",
 ],
-      from: "Session 6 · calibration and reliability diagrams",
+      from: "Session 6 · slides 6 to 14 (the forecast idea, Poll 1, how to read a reliability diagram, the Brier score).",
     },
     {
       cat: 'decisions', slug: 'calibration-fix', session: 6, title: "Fixing the probabilities: Platt scaling and isotonic regression", short: "Platt scaling and isotonic regression", libs: ['svm', 'eval', 'decide', 'evalui', 'decideui'],
@@ -641,7 +641,7 @@ window.SIMS = {
         "Tick “Calibrate on the same rows the model was trained on”. What happens to the isotonic result? Then switch to naive Bayes and repeat.",
         "Press “Repeat on 30 new datasets” and switch the score between Brier and log-loss. Where do the lines cross?",
 ],
-      from: "Session 6 · fixing probabilities: Platt scaling and isotonic regression",
+      from: "Session 6 · slides 15 to 17 (Platt scaling, isotonic regression, how many rows, unseen rows).",
     },
     {
       cat: 'decisions', slug: 'cost-threshold', session: 6, title: "Pick the cut-off from the costs, not from 0.5", short: "Cut-off from the costs", libs: ['svm', 'eval', 'decide', 'evalui', 'decideui'],
@@ -662,7 +662,7 @@ window.SIMS = {
         "Tick the naive Bayes box. Where is the profit peak now, relative to the green formula line?",
         "Look at the strip plot at the bottom. How widely does the best cut-off scatter around the formula for each model?",
 ],
-      from: "Session 6 · turning probabilities into decisions from costs",
+      from: "Session 6 · slides 19 to 28 (the cost matrix, Poll 2, the threshold formula, the profit curve, the loan case).",
     },
     {
       cat: 'decisions', slug: 'test-set-noise', session: 6, title: "Is 86% really better than 85%?", short: "Test-set noise", libs: ['svm', 'eval', 'decide', 'evalui', 'decideui'],
@@ -682,7 +682,7 @@ window.SIMS = {
         "Press “Draw one test set” several times. How often does the 95% interval cover zero?",
         "Press “New seed”. How much does the share of reversed comparisons change from one seed to the next?",
 ],
-      from: "Session 6 · is model B really better than model A: test-set noise",
+      from: "Session 6 · slides 32 to 35 (the teaser, Poll 3, noise between equal models, same rows against different rows).",
     },
     {
       cat: 'decisions', slug: 'mcnemar', session: 6, title: "Only the rows where the models disagree matter", short: "McNemar’s test", libs: ['svm', 'eval', 'decide', 'evalui', 'decideui'],
@@ -703,7 +703,7 @@ window.SIMS = {
         "Press “Add 1,000 agreeing rows” a few times. What changes, and what does not?",
         "Compare the exact p-value, the chi-square p-value and the bootstrap interval. Do they tell the same story?",
 ],
-      from: "Session 6 · comparing two models on the same test rows: McNemar’s test",
+      from: "Session 6 · slides 36 to 38 (McNemar’s test, the bootstrap interval, power).",
     },
     {
       cat: 'decisions', slug: 'cv-t-test', session: 6, title: "The paired t-test across CV folds fools you", short: "t-test across CV folds", libs: ['svm', 'eval', 'decide', 'evalui', 'decideui'],
@@ -722,7 +722,7 @@ window.SIMS = {
         "Look at the p-value histograms. What shape would an honest test give, and which histogram is closer to it?",
         "Press “Run 300 comparisons again”. Do the numbers move much with a fresh set of datasets?",
 ],
-      from: "Session 6 · comparing models with cross-validation: the corrected resampled t-test",
+      from: "Session 6 · slides 39 and 40 (the paired t-test across CV folds, which test when).",
     },
     {
       cat: 'decisions', slug: 'group-metrics', session: 6, title: "Same accuracy, different errors by group", short: "Metrics by group", libs: ['svm', 'eval', 'decide', 'evalui', 'decideui'],
@@ -744,7 +744,7 @@ window.SIMS = {
         "Press “Accuracy”. The two accuracies now match: do the errors match?",
         "Press “New applicants” a few times. Does the pattern hold?",
 ],
-      from: "Session 6 · reading a model’s errors by group",
+      from: "Session 6 · slides 42 and 43 (metrics by group, what different thresholds change).",
     },
   ],
 };
