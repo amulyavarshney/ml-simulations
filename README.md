@@ -1,6 +1,6 @@
 # Interactive machine learning simulations
 
-34 interactive, in-browser simulations covering PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression, the one-class SVM, and model evaluation (validation, leakage and tuning).
+41 interactive, in-browser simulations covering PCA, t-SNE and UMAP, support vector machines, kernels, support vector regression, the one-class SVM, and model evaluation (validation, leakage and tuning, calibration, decisions from costs and comparing models).
 
 **Live site:** https://amulyavarshney.github.io/ml-simulations/
 
@@ -84,10 +84,24 @@ Why one split is a lottery, choosing folds that match the data, leakage through 
 | [Complexity: where the validation score turns](evaluation/validation-curve/) | One complexity knob, the RBF width γ, plotted against the training score and the 5-fold CV score. Move γ and see the boundary go from too smooth to too wiggly, with a plain diagnosis for each zone. |
 | [Would more data help?](evaluation/learning-curve/) | Hold the model fixed and grow the training set: plot the training and the CV score. A big gap that shrinks asks for more data; two low curves that agree ask for a richer model; two high curves that agree mean you are done. |
 
+### Model evaluation II: calibration, decisions and comparing models
+
+Can you trust a model's probabilities, how to turn them into decisions from costs, and how to say with evidence that one model is really better than another.
+
+| Simulation | What it shows |
+|---|---|
+| [Does a 70% forecast come true 70% of the time?](decisions/reliability-diagram/) | A forecast of 70% should come true on about 70% of such cases, like a 70% chance of rain: sort a loan model’s probabilities into bins, compare each bin with what really happened, and see which models can be trusted. |
+| [Fixing the probabilities: Platt scaling and isotonic regression](decisions/calibration-fix/) | Fit Platt scaling (two numbers) or isotonic regression (a staircase) on a separate calibration set, apply it to held-out applicants, and see how the reliability curve, the scores and the ranking change. |
+| [Pick the cut-off from the costs, not from 0.5](decisions/cost-threshold/) | Turn a calibrated probability into a yes or no from the money at stake: approve when the chance of repayment is above loss / (gain + loss), and see why 0.5 loses money and why an over-confident model breaks the rule. |
+| [Is 86% really better than 85%?](decisions/test-set-noise/) | Two models with true accuracies of 85% and 86% will not score 85% and 86% on a test set: simulate 1,000 comparisons to see how often chance reverses the order, and use a bootstrap interval to judge one test set. |
+| [Only the rows where the models disagree matter](decisions/mcnemar/) | Two models scored on the same test rows differ only where one is right and the other wrong, so McNemar’s test looks only at those rows (b against c) and a paired bootstrap gives an interval for the difference. |
+| [The paired t-test across CV folds fools you](decisions/cv-t-test/) | Compare two models that are equally good, over and over on fresh data: a paired t-test on cross-validation fold differences cries “different” far too often, and Nadeau and Bengio’s corrected version does not. |
+| [Same accuracy, different errors by group](decisions/group-metrics/) | Choose one threshold for everyone or one per group, and read the approval rate, true positive rate, false positive rate, precision, accuracy and profit that the same model gives for each group of made-up applicants. |
+
 ## How it is built
 
 - **Plain static files.** HTML, CSS and vanilla JavaScript with canvas. No framework, no build step, no dependencies, and no network requests, so it also works offline: open `index.html` in a browser or serve the folder.
-- **The algorithms are real.** `assets/ml-core.js` (PCA, SVD, trustworthiness, cross-validation folds), `assets/ml-svm.js` (a libsvm-style SMO solver behind SVC, epsilon-SVR and one-class SVM, plus logistic regression and TF-IDF) `assets/ml-embed.js` (t-SNE and UMAP) and `assets/ml-eval.js` (fold schemes, AUC, feature selection, nested cross-validation, a compact TPE sampler and the data generators for the evaluation pages) are small and readable.
+- **The algorithms are real.** `assets/ml-core.js` (PCA, SVD, trustworthiness, cross-validation folds), `assets/ml-svm.js` (a libsvm-style SMO solver behind SVC, epsilon-SVR and one-class SVM, plus logistic regression and TF-IDF) `assets/ml-embed.js` (t-SNE and UMAP) `assets/ml-eval.js` (fold schemes, AUC, feature selection, nested cross-validation, a compact TPE sampler and the data generators for the evaluation pages) and `assets/ml-decide.js` (reliability bins, Platt scaling, isotonic regression, Gaussian naive Bayes, profit against a threshold, McNemar and bootstrap tests, Student-t and chi-square distributions, the corrected resampled t-test and the made-up loan tables) are small and readable.
 - **Colour and accessibility.** Series colours come from a palette checked for colour-blind separation in light and dark mode; classes also differ by marker shape. Every page works on a phone, respects the system dark-mode and reduced-motion settings, and has keyboard-operable controls.
 
 ## How the numbers are checked
@@ -102,10 +116,11 @@ Why one split is a lottery, choosing folds that match the data, leakage through 
 - **SVC, SVR, one-class SVM:** same number of support vectors and decision values within about 4e-4 of scikit-learn at the same tolerance.
 - **Logistic regression:** coefficients agree to 1e-8; the wine cross-validation curve agrees to within one validation sample.
 - **Model evaluation:** the fold assignments of K-fold, stratified K-fold, group K-fold and the time-series split are identical to scikit-learn on stored inputs; the rank-based AUC and the ROC curve equal `roc_auc_score` and `roc_curve`; the F statistics and selected columns equal `f_classif` and `SelectKBest`; nearest centroid and k-nearest neighbours give the same predictions as scikit-learn. Property tests check that selection inside the folds stays near 50% on noise, that nested CV is below the best CV score on noise, and that the compact TPE beats random search on a smooth test function.
+- **Model evaluation II:** the Brier score, log-loss and the reliability bins (with their counts) equal `brier_score_loss`, `log_loss` and `calibration_curve`; the isotonic regression thresholds and predictions equal `IsotonicRegression`; Platt scaling equals an unregularised `LogisticRegression` of the label on the score; Gaussian naive Bayes and the k-nearest-neighbour vote profile equal `GaussianNB` and `KNeighborsClassifier`; the exact McNemar p-value equals `scipy.stats.binomtest`, and the chi-square, Student-t and incomplete-beta functions, the paired t-test and the confusion counts by group equal SciPy and scikit-learn. Property tests check that calibration maps never decrease, that Platt scaling and isotonic regression lower the Brier score of an over-confident model, that the best threshold sits near loss / (gain + loss) for calibrated probabilities, that the naive paired t-test over cross-validation folds raises more false alarms than the corrected one, and that the bootstrap interval covers the true difference about 95% of the time.
 - **t-SNE:** the affinity matrix matches scikit-learn to 1e-10 and the first iterations follow its update rule. t-SNE is chaotic, so beyond a few iterations only quality (final KL divergence, trustworthiness) can be compared, not exact positions.
 - **UMAP** is a compact re-implementation of the published recipe (smooth-kNN graph, fuzzy union, spectral start, edge-sampled SGD, transform of new points), **not** the `umap-learn` package, and is not bit-identical to it. Its curve parameters match SciPy's curve fit, and its graph and layout are checked by property tests.
 
-To regenerate the reference values (needs Python with numpy, scipy, scikit-learn): `python3 tests/make_reference_core.py`, `make_reference_svm.py` and `make_reference_embed.py`.
+To regenerate the reference values (needs Python with numpy, scipy, scikit-learn): `python3 tests/make_reference_core.py`, `make_reference_svm.py`, `make_reference_embed.py`, `make_reference_eval.py` and `make_reference_decide.py`.
 
 ## Run it locally
 
@@ -128,7 +143,7 @@ One-time setup in the repository on GitHub: **Settings → Pages → Build and d
 ## Data and credits
 
 - UCI **Wine** recognition data (Forina et al., 1991) and UCI **Optical Recognition of Handwritten Digits** (Alpaydin & Kaynak), both CC BY 4.0, loaded through scikit-learn and embedded in `assets/data/`.
-- The customer-message corpus in the text simulation, and the churn table and customer data in the evaluation pages, are made up (generated in your browser).
+- The customer-message corpus in the text simulation, the churn table and customer data in the evaluation pages, and the loan tables in the calibration, decision and model-comparison pages, are made up (generated in your browser).
 - Some of the SVM pages point to StatQuest (Josh Starmer) videos on support vector machines as background viewing. The videos are cited, not reproduced; the examples and code here are original.
 
 ## Licence

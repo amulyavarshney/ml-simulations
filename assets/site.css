@@ -117,6 +117,8 @@ table.t th, table.t td { text-align: right; padding: 4px 8px; border-bottom: 1px
 table.t th:first-child, table.t td:first-child { text-align: left; }
 table.t td.good { color: var(--good); font-weight: 700; } table.t td.warn { color: var(--warn); font-weight: 700; } table.t td.bad { color: var(--bad); font-weight: 700; }
 table.t th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+table.t.compact th, table.t.compact td { padding: 4px 6px; }
+@media (max-width: 480px) { table.t.compact { font-size: 12.5px; } table.t.compact th { font-size: 11.5px; } table.t.compact th, table.t.compact td { padding: 4px 4px; } }
 .mono { font-family: var(--mono); font-size: 13px; }
 .predict { border: 2px dashed var(--axis); border-radius: var(--radius); padding: 12px 14px; background: var(--card); }
 .predict h3 { font-size: 15px; margin-bottom: 6px; } .predict .opts { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
