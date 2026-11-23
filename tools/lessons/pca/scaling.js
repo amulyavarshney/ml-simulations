@@ -1,0 +1,143 @@
+// Lesson for pca/scaling: PCA maximises variance, variance depends on units, so standardise (wine data).
+module.exports = {
+  idea: 'PCA chases variance, and variance depends on the unit a column is written in. A column with big numbers (proline, in the hundreds) wins PC1 whatever it means. <b>Standardise</b> first, so every column starts with variance 1.',
+  why: 'On the raw wine data, PC1 is 99.8% one chemical, proline, only because proline is measured in hundreds and most other columns near 1. The 2-D map then mixes the three cultivars: 67% of a wine\'s nearest neighbours share its cultivar, against 93% after scaling. Write milligrams as grams and the "answer" changes, though no information did.',
+  analogy: 'Two judges mark a contest, one out of 10 and the other out of 1000. Add the raw marks and only the second judge matters. A fair total first puts both on the same scale, for example "how many standard deviations above average is this contestant". Standardising does that to every column before PCA.',
+  vocab: [
+    ['Standardise (z-score)', 'Replace each value by <span class="eq">z = (x − mean) / sd</span>. The column then has mean 0 and standard deviation 1.'],
+    ['Standard deviation (sd)', 'The square root of the variance, in the same unit as the column. Wine: proline 314, magnesium 14.2, hue 0.23.'],
+    ['Unit change', 'Writing the same measurement in another unit multiplies the whole column by a constant m (mg to g is m = 0.001). Its variance is multiplied by <b>m²</b>.'],
+    ['Loading', 'A feature\'s weight in a PC (an entry of its eigenvector). A loading near ±1 means the PC is almost that one feature.'],
+    ['Correlation matrix', 'The covariance matrix of standardised columns. Its diagonal is all 1s, so each column brings exactly 1 unit of variance.'],
+    ['Neighbour purity', 'In the 2-D PC1–PC2 map, the share of each wine\'s 10 nearest neighbours that belong to the same cultivar. Guessing gives about 34%; 100% means the cultivars form clean clumps.'],
+    ['Pipeline', 'A chain such as scale, then PCA, then model, fitted as one object so that each step learns only from training rows.']],
+  steps: [
+    { h: 'What PCA actually maximises', p: 'PCA picks the direction with the largest variance. The variance of a column is the average squared distance from its mean, so it carries the column\'s <b>unit squared</b>. PCA has no way to know that 314 in proline means something different from 314 in another column. It sees numbers, not meanings.' },
+    { h: 'Two columns, two scales', p: 'Take age (years) and monthly income (₹). Age varies by about 4 years, income by about ₹4,000. The variance of age is 17 and the variance of income is 17,000,000. Any direction that includes income carries a million times more variance, so PC1 becomes "income" and age gets no say. Nobody decided income is more important. The unit did.' },
+    { h: 'Wine shows the same thing', p: 'Standard deviations in the wine data: proline 314, magnesium 14.2, alcalinity of ash 3.3, colour intensity 2.3, and nine others below 1.2. Proline alone holds 99.8% of the total variance. PC1 therefore explains 99.8% and is almost exactly "proline" (loading 1.000). The other twelve columns are nearly invisible.' },
+    { h: 'The fix: standardise first', p: 'For each column subtract its mean and divide by its standard deviation. Now every column has variance 1, so the total variance equals the number of columns (13) and no column wins by unit. The covariance matrix of the z-scores is the <b>correlation matrix</b>: PCA now looks at which columns move together, not at how big their numbers are.' },
+    { h: 'What PC1 becomes', p: 'After scaling, PC1 explains 36.2% and many columns contribute: flavanoids 0.42, total phenols 0.40, OD280 0.38, proanthocyanins 0.31, nonflavanoid phenols −0.30. These columns are correlated, so they add up in one direction. PC1 is now a "phenol-rich or phenol-poor wine" axis, and the cultivars line up along it.' },
+    { h: 'Scaling makes PCA unit-proof', p: 'Multiply a column by any constant m, then standardise: <span class="eq">(m·x − m·mean) / (m·sd)</span> is the same z as before. So the standardised PCA gives identical results in grams or milligrams, while raw PCA changes. This is why the unit multiplier does nothing when Standardise is on.' },
+    { h: 'When not to standardise', p: 'If all columns share one unit and their relative size is meaningful, leave them alone. The 64 pixels of a digit image are all grey levels from 0 to 16. Standardising would boost faint, noisy border pixels to the same weight as the stroke pixels, and three pixels are always 0, so dividing by their sd of 0 fails. Choose on purpose, not by habit.' },
+    { h: 'Learn the scaling from training data only', p: 'The mean and sd are numbers learned from data. If you standardise the whole table once and then cross-validate, the validation rows have influenced the scaler. Put <code>StandardScaler</code> and <code>PCA</code> in one pipeline, so each is fitted on the training rows of each fold. The pipeline simulation shows this.' }],
+  example: {
+    title: 'five customers, raw versus standardised PCA',
+    setup: 'Age (years) and monthly income (₹) of five customers. The two columns rise together (correlation 0.88). Run PCA twice by hand: on the raw numbers, then after standardising.',
+    table: { head: ['Customer', 'Age', 'Income (₹)', 'Age − 30', 'Income − 30,000'], rows: [
+      ['A', '25', '27,000', '−5', '−3,000'],
+      ['B', '27', '25,000', '−3', '−5,000'],
+      ['C', '30', '30,000', '0', '0'],
+      ['D', '33', '35,000', '3', '5,000'],
+      ['E', '35', '33,000', '5', '3,000']] },
+    walk: [
+      '<b>Means</b> are 30 years and ₹30,000, which gives the two deviation columns in the table.',
+      '<b>Raw covariance</b> (divide by n − 1 = 4). var(age) = (25+9+0+9+25)/4 = 17. var(income) = (9+25+0+25+9) × 10⁶ / 4 = 17,000,000. cov = (15+15+0+15+15) × 1000 / 4 = 15,000.',
+      '<b>Raw PCA.</b> C = [[17, 15,000], [15,000, 17,000,000]]. The income entry is a million times the age entry, so λ₁ ≈ 17,000,013 and λ₂ ≈ 3.8 (they multiply to det C = 64,000,000). PC1 = (0.0009, 1.0000): the income axis. PC1 share = <b>99.99998%</b>. Age has no say.',
+      '<b>Standardise.</b> sd(age) = √17 = 4.123 and sd(income) = √17,000,000 = 4,123. The covariance of the z-scores is the correlation r = 15,000 / (4.123 × 4,123) = 15,000 / 17,000 = <b>0.882</b>. The correlation matrix is [[1, 0.882], [0.882, 1]].',
+      '<b>Standardised PCA.</b> The eigenvalues of [[1, r], [r, 1]] are 1 + r and 1 − r: <b>1.882</b> and <b>0.118</b> (they add to 2, the number of columns). The eigenvector of 1 + r is (1, 1)/√2 = <b>(0.707, 0.707)</b> for any positive r. PC1 share = 1.882 / 2 = <b>94.1%</b>.',
+      '<b>Change the unit instead.</b> Write income in ₹ thousand. Now sd(income) = 4.123 = sd(age), and the raw covariance is [[17, 15], [15, 17]], with λ = 17 ± 15 = 32 and 2. PC1 = (0.707, 0.707) and share = 32/34 = 94.1%. The same answer as the standardised one.'],
+    result: 'Raw, income in ₹: PC1 is income alone, 99.99998% of the variance. Standardised (or income in ₹ thousand, where both sds are equal): PC1 = (0.707, 0.707), 94.1%. The only thing that changed between the two answers was a unit.' },
+  read: [
+    ['Left plot: bars "Spread of each feature (standard deviation)"', 'Each bar is the sd of one wine feature on a <b>log</b> scale: every gridline is 10 times the last. The dashed line is sd = 1. This is what PCA sees. The orange bar marks the feature that has taken over PC1 (only when Standardise is off and PC1 explains over 90%).'],
+    ['Middle plot: "PC1 loadings"', 'The weight of each feature in PC1. Blue is positive, orange negative. A bar reaching ±1 means PC1 is nearly that one feature.'],
+    ['Right plot: markers', 'The 178 wines on PC1 and PC2. Blue circle: cultivar 1. Orange triangle: cultivar 2. Green square: cultivar 3. The axis ranges rescale with your settings.'],
+    ['Switch: Standardise features first?', '<i>Off (raw units)</i> gives PCA the numbers as measured. <i>On (mean 0, sd 1)</i> standardises every column first.'],
+    ['Unit lab: Change the unit of, Unit multiplier', 'Pick a feature and multiply its column by 0.001 to 1000 (log slider). A multiplier of 1000 is the same as reporting it in a unit 1000 times smaller. Each feature remembers its own multiplier. <i>Reset all units</i> sets them back to 1.'],
+    ['Readouts: PC1 explains, PC2 explains', 'The share of the total variance carried by each of the first two components.'],
+    ['Readout: Largest PC1 loading', 'The feature with the biggest absolute loading, and its size. It turns amber above 0.9: one column is running PC1.'],
+    ['Readout: Neighbour purity in PC1–PC2 map', 'The share of each wine\'s 10 nearest neighbours (in the 2-D map) that share its cultivar. Green above 85%, amber below 75%.'],
+    ['Hovering over a bar or a dot', 'Shows the exact sd, loading, or the wine number and cultivar.']],
+  experiments: [
+    { do: 'Answer the "Predict first" question, then leave <i>Standardise features first?</i> on <i>Off (raw units)</i> and read the three charts and four readouts. Hover over the proline bar.', see: 'PC1 explains 99.8% and PC2 only 0.2%. The largest loading is proline (1.00). The orange bar in the left plot is proline, with sd 314, about 22 times magnesium (14.2). Neighbour purity is 67%.', why: 'Proline\'s variance is about 99,200 out of a total of about 99,400. PCA maximises variance, so PC1 is nearly the proline axis. The map is a one-feature sort, which does not separate cultivars 2 and 3 well.' },
+    { do: 'Keep Standardise <i>Off</i>. With <i>Change the unit of: proline</i>, slide <i>Unit multiplier</i> slowly from × 1 down to × 0.001.', see: 'PC1 explains 99.8% at first, falls to a dip of about 67% near × 0.045, then climbs again to 90.9% at × 0.001. The orange bar vanishes while PC1 is below 90% and comes back on <b>magnesium</b> below about × 0.005. At × 0.001 the largest loading is magnesium (1.00) and purity is 57%.', why: 'Variance scales with the square of the multiplier, so proline\'s sd shrinks from 314 towards 0.3. The takeover happens where proline\'s sd equals magnesium\'s: 314 × m = 14.2, so m ≈ 0.045. At that point two columns tie and PC1 is a mix of both. No wine changed.' },
+    { do: 'Press <i>Reset all units</i>. Choose <i>Change the unit of: alcohol</i> and slide the multiplier up to × 1000.', see: 'PC1 explains 92.8% and PC2 7.2%. The largest loading is alcohol (0.96). Purity changes to 75%.', why: 'Alcohol\'s sd grows from 0.81 to 810, which beats proline\'s 314. The purity moved from 67% to 75% with no new information. It only reflects which two columns the units happen to put on top.' },
+    { do: 'Press <i>Reset all units</i>, then switch Standardise to <i>On</i>. Now drag the multiplier of any feature, for example alcohol × 1000 or proline × 0.001.', see: 'PC1 explains 36.2% and PC2 19.2%, the largest loading is flavanoids (0.42), purity is 93%, and every readout stays exactly the same however far you drag the multiplier. All bars in the left plot sit at sd = 1.', why: 'The z-score cancels the multiplier: (m·x − m·mean) / (m·sd) = (x − mean) / sd. Standardised PCA cannot be moved by a change of unit.' },
+    { do: 'With Standardise <i>On</i>, study the loadings chart and the right plot.', see: 'Many bars of different heights: flavanoids 0.42, total phenols 0.40 and OD280/OD315 0.38 positive; nonflavanoid phenols −0.30 and malic acid −0.25 negative. In the map, cultivar 1 (blue circles) is on the right, cultivar 3 (green squares) on the left and cultivar 2 (orange triangles) in the middle and lower.', why: 'Flavanoids and total phenols are strongly correlated (r = 0.87), so they add up in one direction. PC1 reads "phenol-rich versus phenol-poor wine", and the cultivars differ along it: mean PC1 score +2.3, 0.0 and −2.7 for cultivars 1, 2 and 3.' }],
+  remember: [
+    { tag: 'Rule of thumb', text: 'Variance has the unit <b>squared</b>. Multiply a column by m and its variance is multiplied by m². Milligrams to grams (m = 0.001) divides the variance by a million.' },
+    { tag: 'Sanity check', text: 'Before trusting a PCA, look at the sd of each column and the largest loading of PC1. One sd 10 times bigger than the rest, or one loading near ±1, means a unit is speaking, not the data. The page turns that readout amber for you.' },
+    { tag: 'Rule of thumb', text: 'Different units (rupees, years, mg per litre): standardise. One shared unit whose size matters (pixels, same sensor): think first, often leave it raw.' },
+    { tag: 'Formula in words', text: 'z = (x − mean) / sd. After it every column has mean 0 and variance 1, so the total variance is the number of columns (13 for wine) and each PC\'s share is its eigenvalue divided by 13.' },
+    { tag: 'Picture', text: 'The log-scale bar chart of sd is the quickest diagnostic. Bars about equal: scaling will change little. One bar sticking out: that column will take PC1.' },
+    { tag: 'Link to code', text: '<code>make_pipeline(StandardScaler(), PCA(n_components=2))</code>. The scaler learns its means and sds from the rows you <code>fit</code> on, which in cross-validation are the training rows only.' }],
+  mistakes: [
+    { wrong: '"PC1 is proline, so proline is the most important wine feature."', right: 'It means proline has the biggest numbers. Variance in raw units mostly reflects the unit, not importance. Write proline in grams instead of milligrams and magnesium takes PC1.' },
+    { wrong: '"Standardising throws information away."', right: 'It shifts and rescales each column by constants, and you can undo it exactly. What it removes is the unit\'s say in the result.' },
+    { wrong: '"Standardise always, for every dataset."', right: 'It is the right default for mixed units. For columns that share a meaningful unit, such as the 64 grey-level pixels of a digit, standardising lifts faint noisy pixels to the same weight as strokes, and three constant pixels (sd 0) cannot be divided by.' },
+    { wrong: '"Scale the whole table once, then split into folds."', right: 'Mean and sd are learned from data. Learn them from the training rows only, inside a pipeline. Otherwise the validation rows have already influenced the scaler (see the pipeline simulation).' }],
+  code: [
+    {
+      title: 'Raw versus standardised PCA on the wine data',
+      py: [
+        'from sklearn.datasets import load_wine',
+        'from sklearn.decomposition import PCA',
+        'from sklearn.preprocessing import StandardScaler',
+        '',
+        'data = load_wine()',
+        'X = data.data',
+        'Xs = StandardScaler().fit_transform(X)        # every column: mean 0, sd 1',
+        'for name, M in (("raw", X), ("standardised", Xs)):',
+        '    pca = PCA().fit(M)',
+        '    top = abs(pca.components_[0]).argmax()    # feature with the largest |loading| on PC1',
+        '    print(name, "PC1 share:", round(pca.explained_variance_ratio_[0], 3), "| top feature:", data.feature_names[top])'].join('\n'),
+      out: 'raw PC1 share: 0.998 | top feature: proline\nstandardised PC1 share: 0.362 | top feature: flavanoids',
+      walk: [
+        ['load_wine()', 'Returns a bundle: <code>.data</code> is the 178 × 13 table and <code>.feature_names</code> the column names, in the same order.'],
+        ['StandardScaler().fit_transform(X)', '<code>fit</code> learns each column\'s mean and sd, <code>transform</code> applies <code>(x − mean) / sd</code>. <code>fit_transform</code> does both in one call.'],
+        ['PCA().fit(M)', 'With no <code>n_components</code>, PCA keeps all 13 components, ranked by variance.'],
+        ['pca.components_[0]', 'PC1, a row of 13 loadings, one per feature.'],
+        ['abs(...).argmax()', 'Absolute values first (a loading of −0.9 is as big as +0.9), then the index of the largest. It is also the position in <code>feature_names</code>.'],
+        ['explained_variance_ratio_[0]', 'The share of total variance of the first component.']],
+      tip: 'Here the scaler is fitted on all rows, which is fine for exploring. For model scoring put it inside a pipeline.'
+    },
+    {
+      title: 'Change a unit and watch PC1 change',
+      py: [
+        'from sklearn.datasets import load_wine',
+        'from sklearn.decomposition import PCA',
+        'from sklearn.preprocessing import StandardScaler',
+        '',
+        'data = load_wine()',
+        'X = data.data.copy()',
+        'X[:, 12] *= 0.001                             # proline in grams instead of milligrams',
+        'for name, M in (("raw", X), ("standardised", StandardScaler().fit_transform(X))):',
+        '    pca = PCA().fit(M)',
+        '    print(name, round(pca.explained_variance_ratio_[0], 3), data.feature_names[abs(pca.components_[0]).argmax()])'].join('\n'),
+      out: 'raw 0.909 magnesium\nstandardised 0.362 flavanoids',
+      walk: [
+        ['.copy()', 'Make a separate copy so that the next line does not change the original table.'],
+        ['X[:, 12] *= 0.001', 'Column 12 (all rows) is proline. <code>*=</code> multiplies in place, exactly what the unit multiplier does on the page.'],
+        ['raw 0.909 magnesium', 'PC1 now explains 90.9% and belongs to magnesium. The page shows the same at × 0.001.'],
+        ['standardised 0.362 flavanoids', 'Identical to the previous snippet: the unit change was cancelled by the scaler.']],
+      tip: 'This is the page\'s Unit lab in four lines. Try 0.1, 0.01 and 1000 for other columns.'
+    },
+    {
+      title: 'Scaling and PCA as one pipeline',
+      py: [
+        'from sklearn.datasets import load_wine',
+        'from sklearn.decomposition import PCA',
+        'from sklearn.pipeline import make_pipeline',
+        'from sklearn.preprocessing import StandardScaler',
+        '',
+        'X, y = load_wine(return_X_y=True)',
+        'pipe = make_pipeline(StandardScaler(), PCA(n_components=2))',
+        'Z = pipe.fit_transform(X)                     # scale, then project, in one call',
+        'print("map shape:", Z.shape)',
+        'print("proline mean and sd learned by the scaler:", round(pipe[0].mean_[12], 1), round(pipe[0].scale_[12], 1))',
+        'print("PCA shares:", pipe.named_steps["pca"].explained_variance_ratio_.round(3))'].join('\n'),
+      out: 'map shape: (178, 2)\nproline mean and sd learned by the scaler: 746.9 314.0\nPCA shares: [0.362 0.192]',
+      walk: [
+        ['load_wine(return_X_y=True)', 'Returns just the features <code>X</code> and the labels <code>y</code> (0, 1, 2 for the three cultivars).'],
+        ['make_pipeline(StandardScaler(), PCA(n_components=2))', 'Chains the steps in order. Each step\'s output is the next step\'s input, and names are made from the class names (<code>standardscaler</code>, <code>pca</code>).'],
+        ['pipe.fit_transform(X)', 'Fits the scaler, transforms, fits PCA on that, and transforms again. The result has 178 rows and 2 columns: the map on the page.'],
+        ['pipe[0].mean_, .scale_', '<code>pipe[0]</code> is the first step, the scaler. Its <code>mean_</code> and <code>scale_</code> (the sd) hold what it learned.'],
+        ['pipe.named_steps["pca"]', 'Another way to reach a step, by its name.']],
+      tip: 'StandardScaler divides by n, PCA by n − 1, so scikit-learn\'s eigenvalues here add to 13.07, not 13. The shares and directions are unaffected.'
+    }],
+  check: [
+    { q: 'Why does PC1 of the <b>raw</b> wine data point almost entirely at proline?', options: ['Proline separates the cultivars better than any other feature', 'Proline has by far the largest variance, because of the units it is measured in', 'PCA always picks the last column', 'Proline is correlated with all the other features'], answer: 1, why: 'PCA looks for the direction of largest variance. Proline\'s sd is 314, against 14 for magnesium and about 1 or less for most others, so it holds 99.8% of the variance. That says nothing about how useful proline is.' },
+    { q: 'A feature has variance 4 when measured in metres. What is its variance in centimetres?', options: ['400', '40,000', '4', '200'], answer: 1, why: 'Centimetre values are 100 times larger, and variance squares the scale: 4 × 100² = 40,000.' },
+    { q: 'Standardise is <b>On</b> and you multiply alcohol by 1000. What happens to "PC1 explains"?', options: ['It stays at 36.2%', 'It jumps to about 93%', 'It falls to 0%', 'It becomes 100%'], answer: 0, why: 'The z-score divides the multiplier out again: (1000·x − 1000·mean) / (1000·sd) = (x − mean) / sd. The standardised data, and therefore every PC, is unchanged.' }],
+  teachback: { prompt: 'In two sentences, explain to a friend why PCA on unscaled data can be dominated by one column, and what to do about it.', model: 'PCA looks for the direction with the most variance, and variance grows with the size of the units, so a column measured in hundreds (like proline) swamps columns measured near 1 even though it is no more important. Standardising every column to mean 0 and sd 1 first, inside a pipeline fitted on training rows, removes the unit\'s influence so PCA reflects how the columns move together.' },
+  cheat: 'PCA maximises variance, and variance carries the unit squared (a column times m has variance times m²). Raw wine: proline (sd 314) takes 99.8% of PC1, purity 67%. Standardise with z = (x − mean)/sd, so every column has variance 1 and PCA uses the correlation matrix: PC1 36.2%, purity 93%. Skip it only for columns sharing a meaningful unit.'
+};

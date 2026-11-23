@@ -11,7 +11,8 @@
   const total = S.items.length;
   const hero = h('div', { class: 'hero' }, h('div', { class: 'badges' }, h('span', { class: 'badge session', text: 'Sessions 1 to 6' }), h('span', { class: 'badge', text: total + ' simulations' })),
     h('h1', { text: 'Advanced Machine Learning: interactive simulations' }),
-    h('p', { text: 'Drag points, move sliders and watch PCA, t-SNE, UMAP, support vector machines and model evaluation (validation, leakage, tuning, calibration, decisions and model comparison) respond. Each page is one idea from the live Python segment of a session, running entirely in your browser with the same algorithms the notebooks call.' }),
+    h('p', { text: 'Drag points, move sliders and watch PCA, t-SNE, UMAP, support vector machines and model evaluation (validation, leakage, tuning, calibration, decisions and model comparison) respond. Each page is one idea from a session, running entirely in your browser with the same algorithms the notebooks call.' }),
+    h('p', { html: '<b>Each page is a full lesson, not just a widget:</b> the idea in plain words, an everyday picture, a step-by-step build-up, a worked example with numbers, guided experiments, tips to remember it, common mistakes, tiny annotated code snippets and a three-question self-check. Short on time? Open the <a href="revision/">revision sheet</a>.' }),
     h('p', { class: 'note', html: 'Numerical cores (PCA, SMO-based SVC / SVR / one-class SVM, logistic regression, t-SNE, fold schemes, AUC, feature selection, calibration curves, isotonic regression, McNemar and t-test p-values) are checked against scikit-learn and SciPy in <a href="https://github.com/amulyavarshney/ml-simulations/tree/main/tests">tests/</a>; the UMAP is a compact re-implementation. Course: B.Tech AIML, Year 2, Term 2.' }));
   const chips = h('div', { class: 'filters', role: 'group', 'aria-label': 'Filter by session' });
   const sessions = ['all', '1', '2', '3', '4', '5', '6'];
@@ -26,7 +27,7 @@
       const items = S.items.filter((it) => it.cat === cat.id && (session === 'all' || String(it.session) === session) && (!query || (it.title + ' ' + it.blurb + ' ' + (it.tags || []).join(' ')).toLowerCase().includes(query)));
       if (!items.length) return; shown += items.length;
       const grid = h('div', { class: 'grid' });
-      items.forEach((it) => grid.append(h('a', { class: 'card sim', href: it.cat + '/' + it.slug + '/' }, h('div', { class: 'meta' }, h('span', { class: 'badge', text: 'Session ' + it.session })), h('h3', { text: it.title }), h('p', { text: it.blurb.replace(/<[^>]+>/g, '') }), h('span', { class: 'go', text: 'Open simulation →' }))));
+      items.forEach((it) => grid.append(h('a', { class: 'card sim', href: it.cat + '/' + it.slug + '/' }, h('div', { class: 'meta' }, h('span', { class: 'badge', text: 'Session ' + it.session })), h('h3', { text: it.title }), h('p', { text: it.blurb.replace(/<[^>]+>/g, '') }), h('span', { class: 'go', text: 'Open the lesson →' }))));
       list.append(h('section', { class: 'cat', id: cat.id }, h('header', null, h('h2', { text: cat.name }), h('span', { class: 'badge', text: 'Session ' + cat.session })), h('p', { text: cat.blurb }), grid));
     });
     if (!shown) list.append(h('p', { class: 'empty', text: 'No simulation matches that search.' }));

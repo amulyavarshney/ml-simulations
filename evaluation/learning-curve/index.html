@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Would more data help? · ML II simulations</title>
-<meta name="description" content="Hold the model fixed and grow the training set: plot the training and the CV score. A big gap that shrinks asks for more data; two low curves that agree ask for a richer model; two high curves that agree mean you are done.">
+<meta name="description" content="Hold the model fixed and grow the training set: plot the training and the CV score. A big gap asks for a simpler model, and for more data if the validation curve is still rising; two low curves that agree ask for a richer model; two high curves that agree mean you are done.">
 <script>try{var t=localStorage.getItem('mlsim-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f4e79'/%3E%3Ccircle cx='11' cy='12' r='4.5' fill='%236da7ec'/%3E%3Cpath d='M21 24l5-9h-10z' fill='%23eb6834'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../../assets/site.css">
@@ -14,6 +14,8 @@
 <script src="../../assets/ml-eval.js" defer></script>
 <script src="../../assets/ui.js" defer></script>
 <script src="../../assets/eval-ui.js" defer></script>
+<script src="../../assets/lesson.js" defer></script>
+<script src="../../assets/lessons/evaluation.js" defer></script>
 
 <script src="sim.js" defer></script>
 </head>

@@ -338,16 +338,18 @@
     const top = h('header', { class: 'top' }, h('a', { class: 'brand', href: base }, 'ML II ', h('small', { text: 'simulations' })),
       h('nav', { class: 'crumbs', 'aria-label': 'Breadcrumb' }, h('a', { href: base + '#' + cat.id, text: cat.name }), ' › ', it.short || it.title), themeBtn);
     const stage = h('section', { class: 'stage', 'aria-label': 'Simulation' }), side = h('aside', { class: 'side', 'aria-label': 'Controls' });
+    const L = (window.LESSONS || {})[id], LP = L && UI.lesson ? UI.lesson(it, L) : null;
     const learn = h('section', { class: 'learn' },
       h('div', { class: 'card' }, h('h2', { text: 'What to notice' }), h('ul', { html: (it.notice || []).map((s) => '<li>' + s + '</li>').join('') })),
-      h('div', { class: 'card' }, h('h2', { text: 'Try this' }), h('ol', { html: (it.tryit || []).map((s) => '<li>' + s + '</li>').join('') })),
+      LP ? null : h('div', { class: 'card' }, h('h2', { text: 'Try this' }), h('ol', { html: (it.tryit || []).map((s) => '<li>' + s + '</li>').join('') })),
       h('div', { class: 'card' }, h('h2', { text: 'Where this fits' }), h('p', { html: it.from || '' }), it.note ? h('p', { html: it.note }) : null));
     const peers = S.items.filter((x) => x.cat === it.cat), pi = peers.indexOf(it), all = S.items, ai = all.indexOf(it);
     const prev = all[ai - 1], next = all[ai + 1];
     const mk = (x, dir) => x ? h('a', { href: base + x.cat + '/' + x.slug + '/', rel: dir }, h('small', { text: dir === 'prev' ? '← Previous · Session ' + x.session : 'Next · Session ' + x.session + ' →' }), x.title) : h('span');
-    const main = h('main', { class: 'page', id: 'main' },
+    const main = h('main', { class: 'page' + (LP ? ' has-lesson' : ''), id: 'main' },
       h('div', { class: 'titleblock' }, h('div', { class: 'badges' }, h('span', { class: 'badge session', text: 'Session ' + it.session }), h('span', { class: 'badge', text: cat.name })), h('h1', { text: it.title }), h('p', { class: 'lede', html: it.blurb })),
-      h('div', { class: 'layout' }, stage, side), learn, h('nav', { class: 'pager', 'aria-label': 'Other simulations' }, mk(prev, 'prev'), mk(next, 'next')));
+      LP ? LP.nav : null, LP ? LP.intro : null,
+      h('div', { class: 'layout', id: 'sim' }, stage, side), LP ? [LP.read, LP.after] : null, LP ? h('h2', { class: 'ls-more', text: 'More notes' }) : null, learn, h('nav', { class: 'pager', 'aria-label': 'Other simulations' }, mk(prev, 'prev'), mk(next, 'next')));
     const app = document.getElementById('app') || document.body;
     app.append(h('a', { href: '#main', class: 'sr-only', text: 'Skip to simulation' }), top, main,
       h('footer', { class: 'foot' }, 'Advanced Machine Learning (ML II) · runs entirely in your browser, nothing is sent anywhere. ', h('a', { href: base, text: 'All simulations' }), '.'));

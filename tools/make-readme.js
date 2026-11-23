@@ -13,7 +13,7 @@ ${S.items.length} interactive, in-browser simulations covering PCA, t-SNE and UM
 
 **Live site:** https://amulyavarshney.github.io/ml-simulations/
 
-Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list and a "Try this" list. Some pages start with a "predict first" question.
+Each page is one idea, taught end to end: drag points, move sliders and read the numbers, then work through the lesson around the widget. Every page has the idea in plain words, an everyday picture, a step-by-step build-up, a worked example with real numbers, a guide to reading the picture, guided experiments (do, see, why), tips and tricks to remember it, common mistakes, tiny annotated Python snippets (each one is executed and its output checked), a three-question self-check, a "teach it back" prompt and a revision card. The [revision sheet](revision/) collects every revision card, memory tip and key snippet on one printable page. Some simulations also start with a "predict first" question.
 
 ## Catalogue
 ${table}
@@ -57,7 +57,8 @@ One-time setup in the repository on GitHub: **Settings → Pages → Build and d
 
 1. Add an entry to \`assets/sims.js\` (category, slug, title, text, the extra libraries it needs).
 2. Create \`<category>/<slug>/sim.js\`; copy a similar page for the pattern (\`UI.shell(id)\` builds the page, \`UI.Plot\` draws).
-3. Run \`node tools/make-pages.js\` to write the page's \`index.html\`, then \`node tools/make-readme.js\` to refresh this table.
+3. Write its lesson in \`tools/lessons/<category>/<slug>.js\` (the field list and the style rules are in \`tools/LESSONS.md\`; copy \`tools/lessons/svm-margin/max-margin.js\`).
+4. Run \`node tools/make-lessons.js\` (validates and builds the lesson), \`PY=python3 node tools/check-lesson-code.js\` (runs every snippet and compares its output with what the page shows; needs numpy, scipy and scikit-learn), \`node tools/make-pages.js\` (writes the page's \`index.html\`), \`node tools/make-revision.js\` and \`node tools/make-readme.js\`.
 
 ## Data and credits
 

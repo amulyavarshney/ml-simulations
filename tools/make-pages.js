@@ -12,7 +12,8 @@ for (const it of S.items) {
   const libs = ['core', ...(it.libs || [])].filter((v, i, a) => a.indexOf(v) === i);
   const order = ['core', 'wine', 'digits', 'svm', 'embed', 'eval', 'decide']; libs.sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const pre = libs.filter((l) => !AFTER_UI.includes(l)), post = libs.filter((l) => AFTER_UI.includes(l));
-  const scripts = ['sims.js', ...pre.map((l) => LIB[l]), 'ui.js', ...post.map((l) => LIB[l])].map((f) => `<script src="../../assets/${f}" defer></script>`).join('\n');
+  const lessonFile = fs.existsSync(path.join(__dirname, '..', 'assets', 'lessons', it.cat + '.js')) ? ['lesson.js', 'lessons/' + it.cat + '.js'] : [];
+  const scripts = ['sims.js', ...pre.map((l) => LIB[l]), 'ui.js', ...post.map((l) => LIB[l]), ...lessonFile].map((f) => `<script src="../../assets/${f}" defer></script>`).join('\n');
   const html = `<!doctype html>
 <html lang="en">
 <head>

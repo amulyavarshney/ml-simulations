@@ -4,7 +4,7 @@
 
 **Live site:** https://amulyavarshney.github.io/ml-simulations/
 
-Each page is one idea: drag points, move sliders and read the numbers. Every page also has a "What to notice" list and a "Try this" list. Some pages start with a "predict first" question.
+Each page is one idea, taught end to end: drag points, move sliders and read the numbers, then work through the lesson around the widget. Every page has the idea in plain words, an everyday picture, a step-by-step build-up, a worked example with real numbers, a guide to reading the picture, guided experiments (do, see, why), tips and tricks to remember it, common mistakes, tiny annotated Python snippets (each one is executed and its output checked), a three-question self-check, a "teach it back" prompt and a revision card. The [revision sheet](revision/) collects every revision card, memory tip and key snippet on one printable page. Some simulations also start with a "predict first" question.
 
 ## Catalogue
 
@@ -26,7 +26,7 @@ Why linear maps miss curved structure, what perplexity and n_neighbors do, and h
 
 | Simulation | What it shows |
 |---|---|
-| [A linear map cannot unroll a curved sheet](embeddings/swiss-roll/) | A Swiss roll is a flat sheet rolled up in 3-D. PCA presses the roll flat and piles the turns on top of each other, while t-SNE and UMAP keep neighbours together and unroll it. Drag the roll to view it from any side. |
+| [A linear map cannot unroll a curved sheet](embeddings/swiss-roll/) | A Swiss roll is a flat sheet rolled up in 3-D. PCA can only take a straight-line shadow of it, so parts that are far apart on the sheet land on top of each other. t-SNE and UMAP keep neighbours together and unroll it. Drag the roll to view it from any side. |
 | [t-SNE: perplexity sets each point's neighbourhood](embeddings/tsne-perplexity/) | Every point gets its own Gaussian, widened until about “perplexity” neighbours carry real weight. Click a point to see its neighbourhood, then watch how perplexity reshapes a t-SNE map of the digits. |
 | [t-SNE: same data, different seeds](embeddings/tsne-seeds/) | Run t-SNE three times on the same digits with the same settings. Neighbourhoods come out the same; where the clusters sit relative to each other does not. |
 | [Reading plots honestly: sizes, gaps and structure from nothing](embeddings/misreading/) | Two experiments on what a 2-D map does and does not tell you: one dataset with a loose and a tight cluster, and pure noise that is made to look like clusters. |
@@ -82,7 +82,7 @@ Why one split is a lottery, choosing folds that match the data, leakage through 
 | [Grid, random and smart search under a budget](evaluation/search-strategies/) | Train a fixed number of RBF SVMs chosen by a grid, by seeded random search and by a compact TPE sampler, on a table of C and γ scores. See which values each one tries, and how big the difference in the best score really is. |
 | [The best score you picked is not the score you will get](evaluation/nested-cv/) | Choose the best of m settings by 5-fold CV and the score you report is flattered by the choice. Nested cross-validation and fresh data show what the chosen model really delivers, over many simulated datasets. |
 | [Complexity: where the validation score turns](evaluation/validation-curve/) | One complexity knob, the RBF width γ, plotted against the training score and the 5-fold CV score. Move γ and see the boundary go from too smooth to too wiggly, with a plain diagnosis for each zone. |
-| [Would more data help?](evaluation/learning-curve/) | Hold the model fixed and grow the training set: plot the training and the CV score. A big gap that shrinks asks for more data; two low curves that agree ask for a richer model; two high curves that agree mean you are done. |
+| [Would more data help?](evaluation/learning-curve/) | Hold the model fixed and grow the training set: plot the training and the CV score. A big gap asks for a simpler model, and for more data if the validation curve is still rising; two low curves that agree ask for a richer model; two high curves that agree mean you are done. |
 
 ### Model evaluation II: calibration, decisions and comparing models
 
@@ -138,7 +138,8 @@ One-time setup in the repository on GitHub: **Settings → Pages → Build and d
 
 1. Add an entry to `assets/sims.js` (category, slug, title, text, the extra libraries it needs).
 2. Create `<category>/<slug>/sim.js`; copy a similar page for the pattern (`UI.shell(id)` builds the page, `UI.Plot` draws).
-3. Run `node tools/make-pages.js` to write the page's `index.html`, then `node tools/make-readme.js` to refresh this table.
+3. Write its lesson in `tools/lessons/<category>/<slug>.js` (the field list and the style rules are in `tools/LESSONS.md`; copy `tools/lessons/svm-margin/max-margin.js`).
+4. Run `node tools/make-lessons.js` (validates and builds the lesson), `PY=python3 node tools/check-lesson-code.js` (runs every snippet and compares its output with what the page shows; needs numpy, scipy and scikit-learn), `node tools/make-pages.js` (writes the page's `index.html`), `node tools/make-revision.js` and `node tools/make-readme.js`.
 
 ## Data and credits
 
