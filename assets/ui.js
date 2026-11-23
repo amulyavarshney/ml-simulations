@@ -238,8 +238,8 @@
     _pos(ev) { const r = this.canvas.getBoundingClientRect(); const px = (ev.clientX - r.left) * (this.W / r.width), py = (ev.clientY - r.top) * (this.H / r.height); return { px, py, x: this.iX(px), y: this.iY(py), cx: ev.clientX, cy: ev.clientY }; }
     _bind() {
       const cv = this.canvas; let down = false;
-      cv.addEventListener('pointerdown', (ev) => { const p = this._pos(ev); if (this.handlers.down && this.handlers.down(p, ev) !== false) { down = true; cv.setPointerCapture(ev.pointerId); ev.preventDefault(); } });
-      cv.addEventListener('pointermove', (ev) => { const p = this._pos(ev); if (down) { if (this.handlers.move) this.handlers.move(p, ev); } else if (this.handlers.hover) this.handlers.hover(p, ev); });
+      cv.addEventListener('pointerdown', (ev) => { if (!this.vx) return; const p = this._pos(ev); if (this.handlers.down && this.handlers.down(p, ev) !== false) { down = true; cv.setPointerCapture(ev.pointerId); ev.preventDefault(); } });
+      cv.addEventListener('pointermove', (ev) => { if (!this.vx) return; const p = this._pos(ev); if (down) { if (this.handlers.move) this.handlers.move(p, ev); } else if (this.handlers.hover) this.handlers.hover(p, ev); });
       const end = (ev) => { if (down) { down = false; if (this.handlers.up) this.handlers.up(this._pos(ev), ev); } };
       cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
       cv.addEventListener('pointerleave', () => { UI.tip.hide(); if (this.handlers.leave) this.handlers.leave(); });
