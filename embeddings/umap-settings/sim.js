@@ -20,7 +20,7 @@
   EU.speedControl(s);
   UI.buttons(s, [{ label: 'New seed', primary: true, onClick() { seed++; run(); } }]);
   const pg = UI.progress(s);
-  const rd = UI.panel(side, 'Readouts'), R = UI.read(rd, [{ id: 'ab', label: 'Curve parameters a, b' }, { id: 'edges', label: 'Edges in the graph' }, { id: 'tw', label: 'Trustworthiness' }, { id: 'pu', label: 'Neighbour purity' }, { id: 'cross', label: 'Edges joining different classes' }, { id: 'time', label: 'Fit time' }]);
+  const rd = UI.panel(side, 'Readouts'), R = UI.read(rd, [{ id: 'ab', label: 'Curve parameters a, b' }, { id: 'edges', label: 'Edges in the graph' }, { id: 'tw', label: 'Trustworthiness' }, { id: 'pu', label: 'Neighbour purity' }, { id: 'cross', label: 'Edges between different classes (share of edges · share of strength)' }, { id: 'time', label: 'Fit time' }]);
 
   const map = EU.mapCard(stage, 'UMAP map', '', { aspect: 1.45 });
   const curve = UI.plotCard(stage, 'Target similarity against distance in the map', { xlim: [0, 3], ylim: [0, 1.05], aspect: 2.6, margin: { l: 52, b: 40 }, label: 'Similarity curve 1 over 1 plus a d to the 2b' }, 'UMAP pulls points together where the graph says they are neighbours, and pushes random pairs apart, so that map distances follow this curve. min_dist is where it starts to fall.');
@@ -41,7 +41,7 @@
   function run() {
     gen++; const my = gen; if (anim) anim.stop(); upd(); ab = ML.umapAB(1, md); curve.plot.redraw(); t0 = performance.now(); ['tw', 'pu', 'cross'].forEach((k) => R.set(k, '…'));
     umap = new ML.UMAP(data.X, { nNeighbors: Math.min(nn, data.X.length - 1), minDist: md, nEpochs: 300, seed }); R.set('ab', UI.f(umap.a, 3) + ', ' + UI.f(umap.b, 3)); R.set('edges', umap.edges.length + ' (' + UI.f(2 * umap.edges.length / data.X.length, 1) + ' per point)');
-    if (data.y) { let cr = 0; umap.edges.forEach((e) => { if (data.y[e[0]] !== data.y[e[1]]) cr++; }); R.set('cross', cr + ' of ' + umap.edges.length + ' (' + UI.pct(cr / umap.edges.length, 1) + ')'); } else R.set('cross', 'n/a');
+    if (data.y) { let cr = 0, w = 0, wc = 0; umap.edges.forEach((e) => { w += e[2]; if (data.y[e[0]] !== data.y[e[1]]) { cr++; wc += e[2]; } }); R.set('cross', UI.pct(cr / umap.edges.length, 1) + ' (' + cr + ' of ' + umap.edges.length + ') · ' + UI.pct(wc / w, 1)); } else R.set('cross', 'n/a');
     anim = EU.runner(umap, { onFrame(a, f) { if (my !== gen) return; E = a.points(); pg.set(f); map.plot.redraw(); }, onDone(a) { if (my !== gen) return; E = a.points(); R.set('tw', UI.f(ML.trustworthiness(data.X, E, 10), 3)); R.set('pu', data.y ? UI.f(ML.neighbourPurity(E, data.y, 10), 3) : 'n/a'); R.set('time', ((performance.now() - t0) / 1000).toFixed(2) + ' s (incl. animation)'); pg.set(1); map.plot.redraw(); } });
   }
   run();

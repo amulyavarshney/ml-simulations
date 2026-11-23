@@ -16,7 +16,7 @@
   const rd = UI.panel(side, 'At the chosen value'), R = UI.read(rd, [{ id: 'g', label: 'γ' }, { id: 'tr', label: 'Training score' }, { id: 'cv', label: '5-fold CV score' }, { id: 'gap', label: 'Gap (training − CV)' }, { id: 'best', label: 'Best γ on the curve' }]);
   const dx = h('p', { class: 'note callout', role: 'status' }); rd.append(dx);
 
-  const V = UI.plotCard(stage, 'Score against γ', { xlim: [E0 - 0.1, E1 + 0.1], ylim: [0.5, 1.02], aspect: 1.9, margin: { l: 54, r: 14, t: 12, b: 44 }, interactive: true, label: 'Training score and cross-validated score against gamma, with underfitting and overfitting zones' }, 'Click or drag along the curve to move γ. Bands show ±1 standard deviation over the five folds. The shaded zones come from the CV curve: the middle zone is every γ whose CV score is within one standard error of the best.');
+  const V = UI.plotCard(stage, 'Score against γ', { xlim: [E0 - 0.1, E1 + 0.1], ylim: [0.5, 1.02], aspect: 1.9, margin: { l: 54, r: 14, t: 12, b: 44 }, interactive: true, label: 'Training score and cross-validated score against gamma, with too-smooth, about-right and too-wiggly zones' }, 'Click or drag along the curve to move γ. Bands show ±1 standard deviation over the five folds. The shaded zones come from the CV curve only: the middle zone is the run of γ values around the best whose CV score is within one standard error of it; to its left is “too smooth”, to its right “too wiggly”. Whether that means underfitting or overfitting is read from the training line and the gap.');
   UI.legend(V.card, [{ label: 'training score', color: UI.colors().c[1], shape: 'dash' }, { label: '5-fold CV score', color: UI.colors().c[0], shape: 'line' }, { label: 'best γ', color: UI.colors().c[2], shape: 'diamond' }]);
   const B = UI.plotCard(stage, 'The boundary at this γ', { xlim: [-1.7, 2.7], ylim: [-1.2, 1.7], aspect: 1.9, equal: true, margin: { l: 34, r: 10, t: 10, b: 30 }, label: 'Decision boundary of the SVM at the chosen gamma with the training points' }, ' ');
   UI.legend(B.card, [{ label: 'class A', color: UI.colors().c[0], shape: 'circle' }, { label: 'class B', color: UI.colors().c[1], shape: 'triangle' }, { label: 'boundary', color: UI.colors().ink, shape: 'line' }]);
@@ -38,7 +38,10 @@
     refit(); const q = curve[jSel];
     R.set('g', UI.sci(Math.pow(10, ge(jSel)))); if (q) { R.set('tr', EVU.pc(q.tr, 1)); R.set('cv', EVU.pc(q.te, 1) + ' ± ' + (100 * q.sd).toFixed(1)); R.set('gap', ((q.tr - q.te) * 100).toFixed(1) + ' points', q.tr - q.te > 0.07 ? 'bad' : 'good'); } else { ['tr', 'cv', 'gap'].forEach((k) => R.set(k, '…')); }
     if (zones) { R.set('best', UI.sci(curve[zones.bi].g) + ' (' + EVU.pc(curve[zones.bi].te, 1) + ')', 'good'); const z = jSel < zones.a ? 'under' : jSel > zones.b ? 'over' : 'mid', gap = (q.tr - q.te) * 100;
-      dx.innerHTML = z === 'under' ? '<b>Underfits (high bias).</b> Training and validation scores are close (gap ' + gap.toFixed(1) + ' points) but both sit below what a more flexible \u03b3 reaches (best CV ' + EVU.pc(curve[zones.bi].te, 1) + '): the boundary is too smooth to follow the moons.' : z === 'over' ? '<b>Overfits (high variance).</b> Training stays high but validation falls (gap ' + gap.toFixed(1) + ' points): the boundary bends round individual noisy points.' : '<b>About right.</b> The CV score is within one standard error of the best, and the gap is ' + gap.toFixed(1) + ' points.'; }
+      const bq = curve[zones.bi].te, pc = (v) => EVU.pc(v, 1);
+      dx.innerHTML = z === 'under' ? (q.tr < bq ? '<b>Underfits (high bias).</b> Training (' + pc(q.tr) + ') and validation (' + pc(q.te) + ') both sit below the best CV score (' + pc(bq) + ', gap ' + gap.toFixed(1) + ' points): the boundary is too smooth to follow the moons.' : '<b>A little too smooth.</b> The CV score (' + pc(q.te) + ') is more than one standard error below the best (' + pc(bq) + '), but training (' + pc(q.tr) + ') is already above it, so this is mild. Underfitting proper shows a low training score too.')
+        : z === 'over' ? '<b>Overfits (high variance).</b> Training is high (' + pc(q.tr) + ') but validation has fallen to ' + pc(q.te) + ', below the best (' + pc(bq) + '): a gap of ' + gap.toFixed(1) + ' points. The boundary bends round individual noisy points.'
+        : '<b>About right.</b> The CV score is within one standard error of the best, and the gap is ' + gap.toFixed(1) + ' points.'; }
     else { R.set('best', '…'); dx.textContent = 'Computing the curve…'; }
     V.plot.redraw(); B.plot.redraw();
   }
@@ -47,7 +50,7 @@
     p.axes({ xlabel: 'γ (log scale)', ylabel: 'accuracy', xticks: [-2, -1, 0, 1, 2], xfmt: (v) => String(+Math.pow(10, v).toPrecision(2)), yfmt: (v) => Math.round(v * 100) + '%' });
     if (zones) {
       p.rect(E0 - 0.1, lo, ge(zones.a) - STEP / 2, 1.02, { fill: col.c[3], alpha: 0.13 }); p.rect(ge(zones.b) + STEP / 2, lo, E1 + 0.1, 1.02, { fill: col.c[7], alpha: 0.12 });
-      p.text((E0 - 0.1 + ge(zones.a) - STEP / 2) / 2, 1.0, 'underfits', { align: 'center', weight: 700, color: col.ink, size: 12, base: 'top', dy: 8 }); p.text((ge(zones.b) + STEP / 2 + E1 + 0.1) / 2, 1.0, 'overfits', { align: 'center', weight: 700, color: col.ink, size: 12, base: 'top', dy: 8 });
+      p.text((E0 - 0.1 + ge(zones.a) - STEP / 2) / 2, 1.0, 'too smooth', { align: 'center', weight: 700, color: col.ink, size: 12, base: 'top', dy: 8 }); p.text((ge(zones.b) + STEP / 2 + E1 + 0.1) / 2, 1.0, 'too wiggly', { align: 'center', weight: 700, color: col.ink, size: 12, base: 'top', dy: 8 });
       p.text((ge(zones.a) + ge(zones.b)) / 2, lo + 0.015, 'about right', { align: 'center', weight: 700, color: col.ink2, size: 11.5, base: 'bottom', dy: -2 });
     }
     if (!curve.length) return; const pts = (k) => curve.map((q, i) => [ge(i), q[k]]);

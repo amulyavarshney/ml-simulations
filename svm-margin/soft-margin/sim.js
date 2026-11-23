@@ -13,7 +13,7 @@
   UI.buttons(d, [{ label: 'Add an outlier', onClick() { pts.push({ x: 0.9, y: 0.7, c: 0 }); update(true); } }, { label: 'New sample', onClick() { seed++; pts = SU.makePts(preset, seed); update(true); } }]);
   const rd = UI.panel(side, 'Readouts'), R = UI.read(rd, [{ id: 'width', label: 'Street width 2/‖w‖' }, { id: 'sv', label: 'Support vectors' }, { id: 'err', label: 'Training errors' }, { id: 'tr', label: 'Training accuracy' }, { id: 'cv', label: '5-fold cross-validated accuracy' }, { id: 'p1', label: '½‖w‖²  (wide street)' }, { id: 'p2', label: 'C · Σξ  (violations)' }]);
 
-  const ed = SU.editor(stage, { title: 'Overlapping classes', xlim: [-3.2, 3.2], ylim: [-2.3, 2.3], aspect: 1.55, points: () => pts, mode: () => mode.get(), onChange(done) { update(done); }, draw, cap: 'Dashed lines: the street\'s edges. Points inside the street or on the wrong side pay a penalty ξ (drawn as a short segment to the street).' });
+  const ed = SU.editor(stage, { title: 'Overlapping classes', xlim: [-3.2, 3.2], ylim: [-2.3, 2.3], aspect: 1.55, points: () => pts, mode: () => mode.get(), onChange(done) { update(done); }, draw, cap: 'Dashed lines: the street\'s edges. Points inside the street or on the wrong side pay a penalty ξ (a short segment from the point to the dashed edge of its own class).' });
   SU.legend(ed.card, 'class A', 'class B');
   const row = h('div', { class: 'row' }); stage.append(row);
   const A = UI.plotCard(row, 'Accuracy against C', { xlim: [-2, 3], ylim: [0.4, 1.02], aspect: 1.6, margin: { l: 52, b: 42 }, hover: true, label: 'Training and cross-validated accuracy against C' });

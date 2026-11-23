@@ -20,12 +20,13 @@
   UI.check(c, { label: 'Show transformed test digits (circled)', value: true, onChange(v) { showTest = v; redraw(); } });
   EU.speedControl(c);
   UI.buttons(c, [{ label: 'New seed', onClick() { seed++; runUmap(); runTsne(); } }]);
+  UI.note(c, 'New seed changes the UMAP start. The t-SNE map starts from PCA and does not depend on the seed, so its picture stays the same.');
   const t = UI.panel(side, 't-SNE has no transform');
   UI.note(t, 'To place the test digits with t-SNE you must refit on training + test together.');
   UI.check(t, { label: 'Draw arrows: old position → refitted position', value: true, onChange(v) { showArrows = v; tmap.plot.redraw(); } });
   const bt = UI.buttons(t, [{ id: 'refit', label: 'Refit t-SNE with the test points', primary: true, onClick() { refit(); } }]);
   const rd = UI.panel(side, 'Readouts'), R = UI.read(rd, [{ id: 'base', label: 'Test accuracy, 10-NN on the 64 pixels' }, { id: 'u', label: 'Test accuracy, 10-NN on UMAP coordinates' }, { id: 'ut', label: 'Training points moved by transform' }, { id: 'tm', label: 't-SNE: median move of a training point' }]);
-  R.set('base', UI.pct(baseline, 0)); R.set('ut', 'none (0)'); R.set('tm', 'press the button');
+  R.set('base', UI.pct(baseline, 0)); R.set('ut', '…'); R.set('tm', 'press the button');
   const pg = UI.progress(rd);
 
   const row = h('div', { class: 'row' }); stage.append(row);
@@ -51,7 +52,7 @@
   function runUmap() {
     const my = ++gen; if (umapAnim) umapAnim.stop(); Eu_te = []; R.set('u', '…');
     const u = new ML.UMAP(Xtr, { nNeighbors: nn, minDist: 0.1, nEpochs: 300, seed });
-    umapAnim = EU.runner(u, { onFrame(a, f) { if (my !== gen) return; Eu = a.points(); pg.set(f); umapCard.plot.redraw(); }, onDone(a) { if (my !== gen) return; Eu = a.points(); const before = Eu.map((q) => q.slice()); Eu_te = a.transform(Xte, 100); const moved = Eu.reduce((s, q, i) => s + (q[0] !== before[i][0] || q[1] !== before[i][1] ? 1 : 0), 0); R.set('ut', moved === 0 ? 'none (0 of 300)' : moved + ' of 300'); R.set('u', UI.pct(knnAcc(Eu, ytr, Eu_te, yte, 10), 0), 'good'); pg.set(1); umapCard.plot.redraw(); } });
+    umapAnim = EU.runner(u, { onFrame(a, f) { if (my !== gen) return; Eu = a.points(); pg.set(f); umapCard.plot.redraw(); }, onDone(a) { if (my !== gen) return; Eu = a.points(); const before = Eu.map((q) => q.slice()); Eu_te = a.transform(Xte, 100); const after = a.points(); /* read the fitted positions again after transform */ const moved = after.reduce((s, q, i) => s + (q[0] !== before[i][0] || q[1] !== before[i][1] ? 1 : 0), 0); R.set('ut', moved === 0 ? 'none (0 of 300)' : moved + ' of 300', moved === 0 ? '' : 'warn'); const accU = knnAcc(Eu, ytr, Eu_te, yte, 10); R.set('u', UI.pct(accU, 0), accU >= baseline - 0.05 ? 'good' : 'warn'); pg.set(1); umapCard.plot.redraw(); } });
   }
   function runTsne() {
     if (tsneAnim) tsneAnim.stop(); if (refitAnim) refitAnim.stop(); Etr_new = []; disp = null; R.set('tm', 'press the button'); bt.refit.disabled = true;
@@ -75,7 +76,7 @@
     for (let i = 0; i < A.length; i++) { const ax = A[i][0] - ma[0], ay = A[i][1] - ma[1], bx = B[i][0] - mb[0], by = B[i][1] - mb[1]; m11 += bx * ax; m12 += bx * ay; m21 += by * ax; m22 += by * ay; }
     const M = [[m11, m12], [m21, m22]], MtM = [[m11 * m11 + m21 * m21, m11 * m12 + m21 * m22], [m12 * m11 + m22 * m21, m12 * m12 + m22 * m22]], e = ML.eigSym(MtM), V = e.vectors, s = e.values.map((v) => Math.sqrt(Math.max(v, 0)));
     const U = V.map((v, i) => { const u = [M[0][0] * v[0] + M[0][1] * v[1], M[1][0] * v[0] + M[1][1] * v[1]], k = s[i] > 1e-12 ? 1 / s[i] : 0; return [u[0] * k, u[1] * k]; });
-    const Rm = [[0, 0], [0, 0]]; for (let i = 0; i < 2; i++) for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) Rm[a][b] += U[i][a] * V[i][b];
+    const Q = [[0, 0], [0, 0]]; for (let i = 0; i < 2; i++) for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) Q[a][b] += U[i][a] * V[i][b]; const Rm = [[Q[0][0], Q[1][0]], [Q[0][1], Q[1][1]]]; // M = B^T A = U S V^T, so B -> A needs V U^T = (U V^T)^T
     return (q) => { const x = q[0] - mb[0], y = q[1] - mb[1]; return [Rm[0][0] * x + Rm[0][1] * y + ma[0], Rm[1][0] * x + Rm[1][1] * y + ma[1]]; };
   }
   runUmap(); runTsne();

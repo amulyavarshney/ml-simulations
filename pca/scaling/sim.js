@@ -33,11 +33,15 @@
   }
   const rows = (p) => { p.ctx.save(); p.ctx.font = '12px ' + getComputedStyle(document.body).fontFamily; };
   P1.plot.draw = (p, c) => {
+    /* size the left margin to the longest feature name, so labels fit even on a 390 px wide screen */
+    const fs = p.W < 420 ? 11 : 12; p.ctx.save(); p.ctx.font = '700 ' + fs + 'px ' + getComputedStyle(document.body).fontFamily;
+    const need = Math.ceil(Math.max.apply(null, short.map((t) => p.ctx.measureText(t).width))) + 14; p.ctx.restore();
+    if (Math.abs(p.m.l - need) > 0.5) { p.m.l = need; p._layout(); }
     const col = p.col; p.axes({ yticks: [], xticks: [-1, 0, 1, 2, 3], xfmt: (v) => +Math.pow(10, v).toPrecision(2) + '', xlabel: 'standard deviation (log scale)' });
     for (let j = 0; j < d; j++) {
       const y = d - 1 - j, v = Math.log10(Math.max(fit.sd[j], 1e-3)), dom = j === fit.top && !scale && fit.ratio[0] > 0.9;
       p.rect(p.vx[0], y - 0.32, Math.min(v, p.vx[1]), y + 0.32, { fill: dom ? col.c[1] : col.c[0], alpha: dom ? 1 : 0.85 });
-      p.text(p.m.l - 8, p.Y(y), short[j], { px: true, align: 'right', color: j === sel ? col.ink : col.ink2, weight: j === sel ? 700 : 500, size: 12 });
+      p.text(p.m.l - 8, p.Y(y), short[j], { px: true, align: 'right', color: j === sel ? col.ink : col.ink2, weight: j === sel ? 700 : 500, size: fs });
     }
     p.seg(0, p.vy[0], 0, p.vy[1], { color: col.axis, w: 1.2, dash: [3, 3] }); p.text(0, d - 0.35, 'sd = 1', { color: col.muted, size: 11, dx: 5 });
   };

@@ -32,7 +32,8 @@
   }
   function refresh() {
     const m = curve[k - 1];
-    R.set('noisy', UI.f(noisyMSE, 2)); R.set('den', UI.f(m, 2)); R.set('gain', noisyMSE > 0 ? UI.pct(1 - m / noisyMSE, 0) : '–', m < noisyMSE ? 'good' : ''); R.set('best', bestK + ' (error ' + UI.f(curve[bestK - 1], 2) + ')'); R.set('var', UI.pct(fit.cum[k - 1], 1)); R.set('v50', String(fit.kFor(0.5)));
+    R.set('noisy', UI.f(noisyMSE, 2)); R.set('den', UI.f(m, 2)); const g = noisyMSE > 0 ? 1 - m / noisyMSE : null; /* a share that rounds to zero is shown as 0%, never -0% */
+    R.set('gain', g === null ? '–' : UI.pct(Math.abs(g) < 0.005 ? 0 : g, 0), g !== null && g >= 0.005 ? 'good' : ''); R.set('best', bestK + ' (error ' + UI.f(curve[bestK - 1], 2) + ')'); R.set('var', UI.pct(fit.cum[k - 1], 1)); R.set('v50', String(fit.kFor(0.5)));
     G.plot.redraw(); E.plot.redraw();
   }
   G.plot.draw = (p, c) => {

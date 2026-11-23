@@ -13,7 +13,8 @@
   UI.note(c, '150 training points and 150 held-out points. Each cell is one SVM.');
   const m = UI.panel(side, 'Grid shows');
   UI.seg(m, { options: [{ value: 'test', label: 'Test accuracy' }, { value: 'train', label: 'Training accuracy' }, { value: 'sv', label: 'SV share' }], value: metric, onChange(v) { metric = v; G.plot.redraw(); } });
-  const rd = UI.panel(side, 'Selected cell'), R = UI.read(rd, [{ id: 'cg', label: 'C, γ' }, { id: 'tr', label: 'Training accuracy' }, { id: 'te', label: 'Test accuracy' }, { id: 'sv', label: 'Support vectors' }, { id: 'best', label: 'Best cell on the grid' }, { id: 'gs', label: 'γ = “scale” for this data' }]);
+  const rd = UI.panel(side, 'Selected cell'), R = UI.read(rd, [{ id: 'cg', label: 'C, γ' }, { id: 'tr', label: 'Training accuracy' }, { id: 'te', label: 'Test accuracy' }, { id: 'sv', label: 'Support vectors' }, { id: 'best', label: 'Best cell on the grid (picked by test score)' }, { id: 'gs', label: 'γ = “scale” for this data' }]);
+  UI.note(rd, 'The best cell is picked by the same test scores that are shown here, so its test accuracy is a little optimistic. In your own work choose (C, γ) by cross-validation on the training data and use the test set once, at the end.');
 
   const G = UI.plotCard(stage, 'C × γ grid', { xlim: [-2.5, 3.5], ylim: [-2.5, 3.5], aspect: 1.35, margin: { l: 66, r: 12, t: 12, b: 50 }, interactive: true, equal: false, label: 'Grid of accuracies for combinations of C and gamma' }, 'Click a cell. The dashed column is scikit-learn\'s γ = “scale”. Brighter = higher accuracy; the cell numbers are the accuracy in percent.');
   const B = UI.plotCard(stage, 'Decision boundary of the selected cell', { xlim: [-1.9, 2.9], ylim: [-1.4, 1.9], aspect: 1.7, margin: { l: 36, r: 10, t: 10, b: 32 }, label: 'Decision boundary of the selected cell with training points' }, '');

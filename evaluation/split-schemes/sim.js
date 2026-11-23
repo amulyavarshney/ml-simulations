@@ -4,7 +4,7 @@
   const { stage, side } = UI.shell('evaluation/split-schemes');
   const h = UI.h, N = 60, K = 5;
   const TYPES = {
-    iid: { label: 'Balanced, independent rows', fit: 'kfold', why: 'Rows do not depend on each other and the classes are balanced, so any scheme is fine. Plain shuffled K-fold is the usual choice, and stratifying costs nothing.' },
+    iid: { label: 'Balanced, independent rows', fit: 'strat', why: 'Rows do not depend on each other and the classes are balanced, so every scheme is valid. Stratified K-fold is the safe default: it keeps every test fold at the overall class share (the table shows plain K-fold drifting from it), and it costs nothing.' },
     imbalanced: { label: 'Rare positive class (about 1 row in 8)', fit: 'strat', why: 'With few positives, plain shuffled folds can leave a fold with almost none, so its score says little about the rare class. Stratified K-fold gives every fold its fair share.' },
     customers: { label: 'Customers with several rows each', fit: 'group', why: 'A customer\'s rows look alike, so a model can recognise a customer it has seen. Group K-fold keeps all of a customer\'s rows on one side, so the test fold holds only customers the model has never met.' },
     time: { label: 'Rows in time order', fit: 'ts', why: 'The model will be used on the future, so it must be scored on the future. The time-series split always trains on earlier rows and tests on the next block; shuffled folds let the model peek at later rows.' },

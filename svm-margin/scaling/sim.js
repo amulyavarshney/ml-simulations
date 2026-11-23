@@ -15,10 +15,10 @@
   const rd = UI.panel(side, 'Readouts'), R = UI.read(rd, [{ id: 'raw', label: 'Raw SVM, cross-validated accuracy' }, { id: 'std', label: 'Standardised SVM, cross-validated accuracy' }, { id: 'inf1', label: 'Raw: share of the score from feature 1' }, { id: 'inf2', label: 'Standardised: share from feature 1' }]);
 
   const row = h('div', { class: 'row' }); stage.append(row);
-  const A = UI.plotCard(row, 'Raw units: what the unscaled SVM sees', { xlim: [-1, 1], ylim: [-3, 3], aspect: 1.15, margin: { l: 50, r: 10, t: 10, b: 40 }, label: 'Scatter in raw units with the raw SVM line' }, '');
-  const B = UI.plotCard(row, 'After standardising', { xlim: [-3, 3], ylim: [-3, 3], aspect: 1.15, margin: { l: 44, r: 10, t: 10, b: 40 }, label: 'Scatter after standardising with the standardised SVM line' }, '');
+  const A = UI.plotCard(row, 'Raw units: what the unscaled SVM sees', { xlim: [-1, 1], ylim: [-3, 3], aspect: 1.15, margin: { l: 50, r: 10, t: 10, b: 40 }, label: 'Scatter in raw units with the raw SVM line' }, 'The raw SVM\'s line. Make feature 1 smaller (multiplier below about 0.07) and watch the line flatten as the SVM stops using feature 1.');
+  const B = UI.plotCard(row, 'After standardising', { xlim: [-3, 3], ylim: [-3, 3], aspect: 1.15, margin: { l: 44, r: 10, t: 10, b: 40 }, label: 'Scatter after standardising with the standardised SVM line' }, 'The same points in standard units. The line looks the same whatever the multiplier.');
   SU.legend(stage, 'class A', 'class B');
-  const Cv = UI.plotCard(stage, 'Cross-validated accuracy against the units of feature 1', { xlim: [-2, 2], ylim: [0.4, 1], aspect: 2.4, margin: { l: 52, b: 42 }, hover: true, label: 'Accuracy of raw and standardised SVM against the multiplier' }, 'The standardised SVM does not care about units. The raw SVM does.');
+  const Cv = UI.plotCard(stage, 'Cross-validated accuracy against the units of feature 1', { xlim: [-2, 2], ylim: [0.4, 1], aspect: 2.4, margin: { l: 52, b: 42 }, hover: true, label: 'Accuracy of raw and standardised SVM against the multiplier' }, 'The standardised SVM does not care about units. The raw SVM suffers when feature 1 is in small numbers (left) but copes when it is in large numbers (right), because the useful feature then dominates.');
   UI.legend(Cv.card, [{ label: 'standardised', color: UI.colors().c[0], shape: 'line' }, { label: 'raw units', color: UI.colors().c[1], shape: 'dash' }]);
 
   const raw = (m) => base.X.map((q) => [q[0] * m, q[1]]);

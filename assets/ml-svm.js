@@ -189,7 +189,7 @@
       const step = solveLinear(H, g); if (!step) break;
       let t = 1; const f0 = obj(w), gd = ML.dot(g, step);
       for (let k = 0; k < 30; k++) { const w2 = w.map((v, a) => v - t * step[a]); if (obj(w2) <= f0 - 1e-4 * t * gd) { w = w2; break; } t /= 2; if (k === 29) { t = 0; } }
-      if (t === 0 || Math.sqrt(ML.dot(g, g)) < 1e-9) break;
+      if (t === 0 || Math.sqrt(ML.dot(g, g)) < 1e-9 || gd < 1e-18 * (1 + Math.abs(f0))) break; // gd = Newton decrement: the squared distance still to travel, so stop once it is negligible
     }
     const model = { w: w.slice(0, d), b: w[d], decision: (x) => { let z = w[d]; for (let j = 0; j < d; j++) z += w[j] * x[j]; return z; } };
     model.prob = (x) => 1 / (1 + Math.exp(-model.decision(x)));

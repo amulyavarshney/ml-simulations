@@ -20,6 +20,7 @@
   UI.buttons(v, [{ label: 'Look along the roll\'s axis', onClick() { yaw = 0; pitch = Math.PI / 2; view.plot.redraw(); } }, { label: 'Side view', onClick() { yaw = 0; pitch = 0; view.plot.redraw(); } }, { label: 'Default view', onClick() { yaw = 0.55; pitch = 0.45; view.plot.redraw(); } }]);
   UI.note(v, 'Drag the roll to rotate it.');
   const rd = UI.panel(side, 'Trustworthiness (10 neighbours)'), R = UI.read(rd, [{ id: 'pca', label: 'PCA (2 components)' }, { id: 'tsne', label: 't-SNE' }, { id: 'umap', label: 'UMAP' }, { id: 'var', label: 'Variance PCA keeps' }]);
+  UI.note(rd, 'The score is judged against the 3-D points you see, noise included. It catches false neighbours, not cuts.');
   const pr = UI.progress(rd);
 
   const view = UI.plotCard(stage, 'The Swiss roll in 3-D', { xlim: [-1.2, 1.2], ylim: [-1, 1], aspect: 2.2, equal: true, margin: { l: 6, r: 6, t: 6, b: 6 }, interactive: true, label: 'Rotatable three-dimensional Swiss roll coloured by position along the sheet' }, 'Colour = position along the sheet (light to dark). Drag to rotate.');

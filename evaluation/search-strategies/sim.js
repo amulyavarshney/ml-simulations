@@ -7,7 +7,7 @@
   let kind = 'moons', noise = 0.3, dseed = 4, B = 9, sseed = 1, S = null, lo = 0, hi = 1, best = null, picks = null, job = null, rep = null, rjob = null;
 
   UI.predict(side, { title: 'Predict first', q: 'You may train only <b>9 models</b>. Option A: a <b>3 × 3 grid</b> of C and γ. Option B: <b>9 random (C, γ) pairs</b>. Which is more likely to land near the best <b>C</b>, and why?', options: ['The grid: it covers the space evenly', 'The random pairs: nine different values of C, the grid only three', 'Both the same', 'Neither: it is luck either way'], answer: 1,
-    reveal: '<b>The random pairs.</b> A 3 \u00d7 3 grid tries only <b>three</b> different values of C (and three of \u03b3), however carefully they are spaced. Nine random pairs try about seven. Over 20 moons and 20 rings datasets, the grid tried a C within one step of the best C on 14 of 40, and nine random pairs did so about 90% of the time. But landing near the best C is not the same as scoring much higher: with two hyperparameters and a broad good region, the best scores of the three strategies were close. Press <i>Repeat 100 times</i> to see it on your data.' });
+    reveal: '<b>The random pairs.</b> A 3 \u00d7 3 grid tries only <b>three</b> different values of C (and three of \u03b3), however carefully they are spaced. Nine random pairs try about seven. Over 80 maps (40 moons and 40 rings, noise 0.3), the grid tried a C within one step of the best C on 40 of 80, and nine random pairs did so about 86% of the time. But landing near the best C is not the same as scoring much higher: with two hyperparameters and a broad good region, the best scores of the three strategies were close. Press <i>Repeat 100 times</i> to see it on your data.' });
   const c = UI.panel(side, 'Task');
   UI.seg(c, { label: 'Data', options: [{ value: 'moons', label: 'Moons' }, { value: 'rings', label: 'Rings' }], value: kind, onChange(v) { kind = v; compute(); } });
   UI.slider(c, { label: 'Noise', min: 0.1, max: 0.5, step: 0.05, value: noise, fmt: (v) => v.toFixed(2), onInput: UI.debounce((v) => { noise = v; compute(); }, 250) });
@@ -15,9 +15,9 @@
   UI.note(c, NTR + ' training points, an RBF SVM, 5-fold cross-validated accuracy for each of ' + G + ' × ' + G + ' = ' + G * G + ' (C, γ) pairs on log axes. Building the table takes a moment.');
   const pg = UI.progress(c);
   const sb = UI.panel(side, 'Search');
-  UI.slider(sb, { label: 'Budget: models you may train', min: 4, max: TMAX, step: 1, value: B, fmt: (v) => String(Math.round(v)), onInput(v) { B = Math.round(v); search(); } });
+  UI.slider(sb, { label: 'Budget: models you may train', min: 4, max: TMAX, step: 1, value: B, fmt: (v) => String(Math.round(v)), help: 'Random and TPE use the whole budget. A grid must be a whole a \u00d7 b lattice, so it trains the largest one that fits (for example 4 at budget 5, 36 at budget 40).', onInput(v) { B = Math.round(v); search(); } });
   UI.buttons(sb, [{ label: 'Draw again', primary: true, onClick() { sseed++; search(); } }, { id: 'rep', label: 'Repeat 100 times', onClick() { repeat(); } }]);
-  UI.note(sb, 'Grid: evenly spaced pairs. Random: seeded, so “Draw again” changes the seed. TPE: <b>a compact TPE like Optuna\'s default sampler, not the Optuna package</b>: the first 5 trials are random; after that it splits the trials so far into the best quarter and the rest, fits a smoothed density to each, and proposes the point where “good” is most likely relative to “bad”. Each pair is looked up in the table (it snaps to the nearest cell).');
+  UI.note(sb, 'Grid: evenly spaced pairs. A grid is a whole a × b lattice, so it trains the largest lattice that fits the budget (4 models at budget 5, 9 at 9, 36 at 40); the map titles and the table show how many models each strategy really trained. Random: seeded, so “Draw again” changes the seed. TPE: <b>a compact version of the idea behind Optuna\'s default sampler, not the Optuna package</b>. The first 5 trials are random (Optuna\'s default is 10). After that it splits the trials so far into the best quarter and the rest (Optuna: about the best 10%, at most 25), fits a smoothed density to each, and tries the point where “good” is most likely relative to “bad”. Each pair is looked up in the table (it snaps to the nearest cell).');
   const pg2 = UI.progress(sb);
 
   const row = h('div', { class: 'row' }); stage.append(row); row.style.gridTemplateColumns = 'repeat(auto-fit, minmax(260px, 1fr))'; row.style.alignItems = 'start';
@@ -30,7 +30,7 @@
   window.addEventListener('themechange', () => { paintBar(); }); paintBar();
   const T = EVU.card(stage, 'What each strategy found with this budget'); const tab = EVU.table(T, ['Strategy', 'Models', 'Best found', 'C values tried', 'γ values tried', 'Nearest C to the best'], [['', '', '', '', '', ''], ['', '', '', '', '', ''], ['', '', '', '', '', '']], { caption: 'Results of each search strategy' });
   const tnote = UI.note(T, '', 'callout');
-  const Cu = UI.plotCard(stage, 'Average best score against budget (100 repeats)', { xlim: [1, TMAX], ylim: [0.8, 1], aspect: 2.1, margin: { l: 54, r: 14, t: 12, b: 42 }, hover: true, label: 'Average best accuracy found against the number of models trained, for grid, random and TPE search' }, 'Press “Repeat 100 times”. Each line is the average, over 100 seeded runs, of the best accuracy found so far; shading covers the middle 80% of runs. The grid has no randomness, so it is one line: lucky or unlucky about where its lines fall.');
+  const Cu = UI.plotCard(stage, 'Average best score against budget (100 repeats)', { xlim: [1, TMAX], ylim: [0.8, 1], aspect: 2.1, margin: { l: 54, r: 14, t: 12, b: 42 }, hover: true, label: 'Average best accuracy found against the number of models trained, for grid, random and TPE search' }, 'Press “Repeat 100 times”. Each line is the average, over 100 seeded runs, of the best accuracy found so far; shading covers the middle 80% of runs. The grid has no randomness, so it is one line: lucky or unlucky about where its lines fall. At each budget it is the largest whole lattice that fits, so it repeats the same grid for several budgets (36 models from budget 36 to 40).');
   UI.legend(Cu.card, [{ label: 'grid', color: UI.colors().c[2], shape: 'square' }, { label: 'random', color: UI.colors().c[0], shape: 'circle' }, { label: 'TPE (compact)', color: UI.colors().c[1], shape: 'triangle' }, { label: 'best cell on the map', color: UI.colors().muted, shape: 'dash' }]);
   const cnote = UI.note(Cu.card, '', 'callout');
 
@@ -62,7 +62,7 @@
   function redraw() {
     ST.forEach((s) => M[s.id].plot.redraw()); Cu.plot.redraw();
     if (!S || !picks) { tab.set(ST.map((s) => [s.title, '…', '…', '…', '…', '…'])); tnote.innerHTML = 'Building the accuracy table…'; return; }
-    ST.forEach((s) => { M[s.id].card.querySelector('h3').textContent = s.title + ' \u00b7 best ' + EVU.pc(picks[s.id].best, 1); });
+    ST.forEach((s) => { M[s.id].card.querySelector('h3').textContent = s.title + ' \u00b7 ' + picks[s.id].pts.length + ' models \u00b7 best ' + EVU.pc(picks[s.id].best, 1); });
     tab.set(ST.map((s) => { const q = picks[s.id]; return [s.title, String(q.pts.length), { text: EVU.pc(q.best, 1), cls: q.best >= S[best[0]][best[1]] - 1e-9 ? 'good' : '' }, String(q.nC), String(q.nG), q.near === 0 ? '0 steps (hit)' : q.near + (q.near === 1 ? ' step' : ' steps')]; }));
     tnote.innerHTML = 'The best cell on the whole map scores <b>' + EVU.pc(S[best[0]][best[1]], 1) + '</b> (C ≈ ' + UI.sci(Math.pow(10, ce(best[0]))) + ', γ ≈ ' + UI.sci(Math.pow(10, ge(best[1]))) + '). One step on a log axis is a factor of 2.3. A search only sees the cells it evaluates.';
   }
@@ -100,7 +100,7 @@
   }
   function repNote() {
     if (!rep) { cnote.innerHTML = ''; return; } const t = B - 1, f = (v) => EVU.pc(v, 1);
-    cnote.innerHTML = 'At a budget of <b>' + B + '</b>: grid best <b>' + f(rep.grid[t]) + '</b> (' + rep.nC[t] + ' different C values), random average best <b>' + f(rep.rnd[t].mean) + '</b> (about ' + rep.dc.rnd[t].toFixed(1) + ' different C values), TPE average best <b>' + f(rep.tpe[t].mean) + '</b>. Chance of trying a C within one step of the best C: random <b>' + f(rep.hit.rnd[t]) + '</b>, TPE <b>' + f(rep.hit.tpe[t]) + '</b>.';
+    cnote.innerHTML = 'At a budget of <b>' + B + '</b>: grid best <b>' + f(rep.grid[t]) + '</b> (' + gridPts(B).length + ' models, ' + rep.nC[t] + ' different C values), random average best <b>' + f(rep.rnd[t].mean) + '</b> (about ' + rep.dc.rnd[t].toFixed(1) + ' different C values), TPE average best <b>' + f(rep.tpe[t].mean) + '</b>. Chance of trying a C within one step of the best C: random <b>' + f(rep.hit.rnd[t]) + '</b>, TPE <b>' + f(rep.hit.tpe[t]) + '</b>.';
   }
   Cu.plot.draw = (p) => {
     const col = p.col; p.axes({ xlabel: 'models trained (budget)', ylabel: 'best accuracy found', xticks: [1, 5, 10, 15, 20, 25, 30, 35, 40], yfmt: (v) => Math.round(v * 100) + '%' });

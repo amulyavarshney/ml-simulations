@@ -15,7 +15,7 @@
   const pS = UI.slider(c, { label: 'Perplexity', min: 2, max: 80, step: 1, value: perp, fmt: (v) => String(Math.round(v)), onInput(v) { perp = Math.round(v); neighbourhood(); debouncedRun(); } });
   UI.buttons(c, [{ label: 'Run t-SNE again', primary: true, onClick() { runSeed++; run(); } }, { label: 'Clear table', onClick() { history = []; table(); } }]);
   EU.speedControl(c);
-  UI.note(c, 'Digits: 300 images, 30 per class, 64 pixel features. The slider drives both pictures.');
+  UI.note(c, 'Digits: 300 images, 30 per class, 64 pixel features. The slider drives both pictures. The left set has only 140 points, so its perplexity stops at 46, which is (140 − 1)/3: above that its readout keeps saying "target 46". The digits map has no such limit before 99.');
   const rd = UI.panel(side, 'Selected point (left)'), R = UI.read(rd, [{ id: 'sig', label: 'Gaussian width σ' }, { id: 'pp', label: 'Perplexity achieved' }, { id: 'nb', label: 'Points with ≥ 10% of the top weight' }]);
   const rr = UI.panel(side, 'This run (right)'), R2 = UI.read(rr, [{ id: 'kl', label: 'KL divergence' }, { id: 'tw', label: 'Trustworthiness' }, { id: 'pu', label: 'Neighbour purity' }]);
   const pr = UI.progress(rr);
@@ -23,7 +23,7 @@
   const A = UI.plotCard(stage, 'A point\'s neighbourhood on a 2-D dataset', { xlim: [-5, 6], ylim: [-4, 3.6], aspect: 1.6, equal: true, interactive: true, margin: { l: 8, r: 8, t: 8, b: 8 }, label: 'Scatter of three blobs with different density; the selected point has a Gaussian neighbourhood' }, 'Click a point. Marker size shows its weight in the selected point\'s neighbourhood; rings mark σ and 2σ.');
   const B = UI.plotCard(stage, 't-SNE map of the digits', { aspect: 1.5, equal: true, margin: { l: 6, r: 6, t: 6, b: 6 }, hover: true, label: 't-SNE map of 300 handwritten digits' }, '');
   EU.digitLegend(B.card);
-  const det = h('section', { class: 'card panel' }, h('h3', { text: 'Runs so far' })), tb = h('tbody'); det.append(h('table', { class: 't' }, h('thead', null, h('tr', null, ['perplexity', 'KL divergence', 'trustworthiness', 'neighbour purity'].map((t) => h('th', { text: t })))), tb), h('p', { class: 'note', html: 'KL moves with perplexity, so it cannot rank settings. Trustworthiness is a fairer yardstick.' })); stage.append(det);
+  const det = h('section', { class: 'card panel' }, h('h3', { text: 'Runs so far' })), tb = h('tbody'); det.append(h('table', { class: 't' }, h('thead', null, h('tr', null, ['perplexity', 'KL divergence', 'trustworthiness', 'neighbour purity'].map((t) => h('th', { text: t })))), tb), h('p', { class: 'note', html: 'Each perplexity is graded against a different target, so KL cannot rank settings. It usually drops as perplexity grows, though not at every step. Trustworthiness and purity are fairer yardsticks.' })); stage.append(det);
 
   function neighbourhood() {
     row = ML.tsneRow(D2, N2, selected, Math.min(perp, (N2 - 1) / 3)); const mx = Math.max(...row.w), cnt = Array.from(row.w).filter((v) => v >= 0.1 * mx).length;

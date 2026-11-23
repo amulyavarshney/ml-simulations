@@ -24,4 +24,9 @@ const ts = new ML.TSNE(Xs, { perplexity: 30 }); const t1 = Date.now(); while (ts
 ok('t-SNE unrolls a swiss roll better than PCA (trustworthiness)', tw(ts.points()) > tw(pc) + 0.005, 't-SNE ' + tw(ts.points()).toFixed(3) + ' in ' + (Date.now() - t1) + ' ms (n=300)');
 const tr = u.transform(Xs.slice(0, 5).map(r => r.map(v => v + 0.01))), E = u.points();
 ok('UMAP.transform puts a slightly perturbed training point near its original', tr.every((p, i) => Math.hypot(p[0] - E[i][0], p[1] - E[i][1]) < 1.5), tr.map((p, i) => Math.hypot(p[0] - E[i][0], p[1] - E[i][1]).toFixed(2)).join(' '));
+{ // Procrustes alignment must undo any rotation, reflection and shift exactly (it once applied the transposed rotation)
+  const rg = ML.rng(5), B = Array.from({ length: 40 }, () => [rg() * 10 - 5, rg() * 6 - 3]); let worst = 0;
+  for (const th of [0.7, 2.0, -1.3]) for (const flip of [1, -1]) { const c = Math.cos(th), s = Math.sin(th), A = B.map(q => { const x = q[0], y = flip * q[1]; return [c * x - s * y + 3, s * x + c * y - 2]; }), out = ML.procrustes(A, B); for (let i = 0; i < A.length; i++) worst = Math.max(worst, Math.hypot(out[i][0] - A[i][0], out[i][1] - A[i][1])); }
+  ok('Procrustes alignment recovers a rotated, mirrored and shifted copy exactly', worst < 1e-9, 'worst point error ' + worst.toExponential(1));
+}
 process.exit(fails ? 1 : 0);

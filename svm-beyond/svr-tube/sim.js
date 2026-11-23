@@ -24,12 +24,18 @@
   const ed = SU.editor(stage, { title: 'Regression with an ε-tube', xlim: [-3.2, 3.2], ylim: [-2.6, 2.6], aspect: 1.7, equal: false, points: () => pts, mode: () => mode.get(), onChange(done) { update(done); }, draw, cap: 'Solid curve: the fit. Shaded band: the tube f(x) ± ε. Ringed points are support vectors (on or outside the tube); thin segments show how far a point sits outside.' });
   const row = h('div', { class: 'row' }); stage.append(row);
   const N = UI.plotCard(row, 'Support vectors against ε', { xlim: [0, 1], ylim: [0, 1], aspect: 1.6, margin: { l: 52, b: 42 }, hover: true, label: 'Number of support vectors against epsilon' }, 'Same data, C and kernel, only ε changes.');
-  const L = UI.plotCard(row, 'Loss against residual', { xlim: [-2, 2], ylim: [0, 2], aspect: 1.6, margin: { l: 48, b: 42 }, label: 'Epsilon-insensitive loss and squared error against residual' }, 'Zero inside the tube, linear outside. Squared error (dashed) grows much faster.');
+  const L = UI.plotCard(row, 'Loss against residual', { xlim: [-2, 2], ylim: [0, 2], aspect: 1.6, margin: { l: 48, b: 42 }, label: 'Epsilon-insensitive loss and squared error against residual' }, ' ');
   UI.legend(L.card, [{ label: 'ε-insensitive loss', color: UI.colors().c[0], shape: 'line' }, { label: 'squared error ½r²', color: UI.colors().muted, shape: 'dash' }]);
 
   const opts = (e) => ({ kernel, epsilon: e, C, gamma, degree: 3, coef0: 1, maxMs: 300 });
   const XY = () => ({ X: pts.map((q) => [q.x]), y: pts.map((q) => q.y) });
+  /* the dashed curve ½r² is below the ε-loss only for moderate misses; it overtakes it for large ones */
+  function lossCap() {
+    const lo = 1 - Math.sqrt(Math.max(0, 1 - 2 * eps)), hi = 1 + Math.sqrt(Math.max(0, 1 - 2 * eps));
+    L.cap.innerHTML = 'Zero inside the tube, linear outside. ' + (eps < 0.5 ? 'At ε = ' + eps.toFixed(2) + ' the squared error ½r² (dashed) is <b>below</b> the ε-loss for misses between ' + lo.toFixed(2) + ' and ' + hi.toFixed(2) + ' and above it beyond that, so the linear loss helps only against large misses.' : 'At ε = ' + eps.toFixed(2) + ' the squared error ½r² (dashed) is never below the ε-loss.');
+  }
   function update(full) {
+    lossCap();
     if (pts.length < 4) { model = null; ed.plot.redraw(); return; } const d = XY(); model = ML.svr(d.X, d.y, opts(eps));
     let inside = 0, loss = 0, mse = 0; pts.forEach((q) => { const r = q.y - model.predict([q.x]), a = Math.abs(r); if (a <= eps + 1e-6) inside++; loss += Math.max(0, a - eps); mse += r * r; });
     R.set('sv', model.nSV + ' of ' + pts.length); R.set('in', inside + ' of ' + pts.length + ' (' + UI.pct(inside / pts.length, 0) + ')'); R.set('loss', UI.f(loss, 2)); R.set('mse', UI.f(mse / pts.length, 3));

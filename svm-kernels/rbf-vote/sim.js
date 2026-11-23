@@ -19,18 +19,19 @@
   const T = h('section', { class: 'card panel' }, h('h3', { text: 'Votes at the probe' })), tb = h('div'); T.append(tb); stage.append(T);
 
   const fz = (z) => model.decision([z]);
+  const bOf = () => (Math.abs(-model.rho) < 1e-9 ? 0 : -model.rho); // an offset below 1e-9 is rounding noise, so treat it as exactly 0
   function update() {
     model = ML.svc(pts.map((q) => [q.x]), pts.map((q) => (q.c ? 1 : -1)), { kernel: 'rbf', gamma, C, tol: 1e-9, maxMs: 300 });
-    const b = -model.rho, rows = model.svIdx.map((i, j) => { const kv = Math.exp(-gamma * (probe - model.SV[j][0]) ** 2); return { z: model.SV[j][0], w: model.coef[j], kv, v: model.coef[j] * kv }; }), sum = rows.reduce((s, q) => s + q.v, 0), sk = rows.reduce((s, q) => s + q.kv, 0), sk2 = rows.reduce((s, q) => s + q.kv * q.kv, 0), eff = sk2 > 0 ? sk * sk / sk2 : 0;
+    const b = bOf(), zeroB = b === 0, rows = model.svIdx.map((i, j) => { const kv = Math.exp(-gamma * (probe - model.SV[j][0]) ** 2); return { z: model.SV[j][0], w: model.coef[j], kv, v: model.coef[j] * kv }; }), sum = rows.reduce((s, q) => s + q.v, 0), sk = rows.reduce((s, q) => s + q.kv, 0), sk2 = rows.reduce((s, q) => s + q.kv * q.kv, 0), eff = sk2 > 0 ? sk * sk / sk2 : 0;
     let n = 0, tot = 0; for (let z = -3; z <= 3.0001; z += 0.02) { const s = model.svIdx.reduce((a, i, j) => a + model.coef[j] * Math.exp(-gamma * (z - model.SV[j][0]) ** 2), 0); if (Math.abs(s) < Math.abs(b)) n++; tot++; } offsetShare = n / tot;
-    R.set('sv', model.nSV + ' of ' + pts.length); R.set('b', UI.f(b, 3)); R.set('f', UI.f(sum + b, 3) + ' → ' + (sum + b >= 0 ? 'failing' : 'healthy')); R.set('eff', UI.f(eff, 1) + ' of ' + rows.length); R.set('far', UI.pct(offsetShare, 0) + ' of the axis', offsetShare > 0.3 ? 'warn' : '');
+    R.set('sv', model.nSV + ' of ' + pts.length); R.set('b', UI.f(b, 3)); R.set('f', Math.abs(sum + b) < 1e-9 ? '0.000 → about 0: no class named' : UI.f(sum + b, 3) + ' → ' + (sum + b >= 0 ? 'failing' : 'healthy')); R.set('eff', UI.f(eff, 1) + ' of ' + rows.length); if (zeroB) R.set('far', 'n/a: b is about 0, so the score is about 0 there'); else R.set('far', UI.pct(offsetShare, 0) + ' of the axis', offsetShare > 0.3 ? 'warn' : '');
     rows.sort((a, c2) => Math.abs(c2.v) - Math.abs(a.v)); tb.textContent = '';
     tb.append(h('table', { class: 't' }, h('thead', null, h('tr', null, ['support vector z', 'α·y', 'K = exp(−γ(z* − z)²)', 'vote α·y·K'].map((t) => h('th', { text: t })))), h('tbody', null, rows.map((q) => h('tr', null, h('td', { text: UI.f(q.z, 2) }), h('td', { text: UI.f(q.w, 3) }), h('td', { text: UI.f(q.kv, 4) }), h('td', { text: UI.f(q.v, 3) }))), h('tr', null, h('td', { text: 'sum of votes' }), h('td'), h('td'), h('td', { text: UI.f(sum, 3) })), h('tr', null, h('td', { text: 'offset b' }), h('td'), h('td'), h('td', { text: UI.f(b, 3) })), h('tr', { style: { fontWeight: 700 } }, h('td', { text: 'score f(z*)' }), h('td'), h('td'), h('td', { text: UI.f(sum + b, 3) })))));
-    tb.append(h('p', { class: 'note', html: 'These votes are not normalised: nothing forces them to add to 1. Where every K is tiny, the sum of votes is near 0 and the sign of the score is the sign of b.' }));
+    tb.append(h('p', { class: 'note', html: 'These votes are not normalised: nothing forces them to add to 1. Where every K is tiny, the sum of votes is near 0 and the sign of the score is the sign of b.' + (zeroB ? ' Here b is about 0 (below 1e-9), so where every vote is tiny the score is about 0 and the page names no class.' : '') }));
     A.plot.redraw();
   }
   A.plot.draw = (p) => {
-    const col = p.col; p.axes({ zero: true, xlabel: 'sensor reading z', ylabel: 'vote · score' }); if (!model) return; const b = -model.rho, zs = []; for (let z = -3; z <= 3.0001; z += 0.02) zs.push(z);
+    const col = p.col; p.axes({ zero: true, xlabel: 'sensor reading z', ylabel: 'vote · score' }); if (!model) return; const b = bOf(), zs = []; for (let z = -3; z <= 3.0001; z += 0.02) zs.push(z);
     model.svIdx.forEach((i, j) => { const w = model.coef[j], z0 = model.SV[j][0]; p.line(zs.map((z) => [z, w * Math.exp(-gamma * (z - z0) ** 2)]), { color: w > 0 ? col.c[1] : col.c[0], w: 1.6, alpha: 0.85 }); });
     p.seg(-3, b, 3, b, { color: col.muted, w: 1.6, dash: [3, 4] }); p.text(-2.95, b, 'b = ' + UI.f(b, 2), { color: col.muted, dy: -10, size: 12, weight: 600, halo: true });
     p.line(zs.map((z) => [z, fz(z)]), { color: col.ink, w: 3.2 });

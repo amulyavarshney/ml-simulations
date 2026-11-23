@@ -32,11 +32,11 @@
   const rd = UI.panel(side, 'Scores on the 3,000 test applicants');
   const R = UI.read(rd, [
     { id: 'brier', label: 'Brier score', title: 'Mean squared gap between the forecast and what happened (1 or 0). Lower is better; 0 is perfect.' },
-    { id: 'logloss', label: 'Log-loss', title: 'Average of −log of the probability given to what happened. Lower is better. Probabilities of exactly 0 or 1 are clipped at 1e-15, so one confident mistake costs about 36.' },
+    { id: 'logloss', label: 'Log-loss', title: 'Average of −log of the probability given to what happened. Lower is better. Probabilities of exactly 0 or 1 are clipped at about 2.2e-16, so one confident mistake costs about 36.' },
     { id: 'ece', label: 'Expected calibration error', title: 'Average gap between forecast and observed share across the bins, each bin weighted by its number of cases. 0 is perfect.' },
     { id: 'slope', label: 'Slope of the dots', title: 'How much the observed share changes when the forecast changes. 1 means parallel to the diagonal; below 1 is over-confident; above 1 is under-confident.' },
   ]);
-  UI.note(rd, 'Hover over a score for its definition. Log-loss clips probabilities of exactly 0 or 1 at 1e-15, as scikit-learn does, so one confident mistake costs about 36.');
+  UI.note(rd, 'Hover over a score for its definition. Log-loss clips probabilities of exactly 0 or 1 at about 2.2e-16, as scikit-learn does, so one confident mistake costs about 36.');
 
   const card = DU.relCard(stage, { title: 'Reliability diagram: what the model said against what happened', cap: 'Each dot is one bin of forecasts: its position is the average forecast (across) and the share that really repaid (up), and its size is the number of cases. On the dashed diagonal a 70% forecast comes true 70% of the time. The bars below count the cases in each bin.' });
   const vnote = h('div', { class: 'note callout', style: { margin: '10px 6px 0' } }); card.card.insertBefore(vnote, card.info);

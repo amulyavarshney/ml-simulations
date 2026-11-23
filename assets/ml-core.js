@@ -179,8 +179,9 @@
     const { values, vectors } = ML.eigSym(MtM);
     const V = vectors, s = values.map((v) => Math.sqrt(Math.max(v, 0)));
     const Ucols = V.map((v, i) => { const u = [M[0][0] * v[0] + M[0][1] * v[1], M[1][0] * v[0] + M[1][1] * v[1]]; const sc = s[i] > 1e-12 ? 1 / s[i] : 0; return [u[0] * sc, u[1] * sc]; });
-    // R = sum_i u_i v_i^T  (B -> A)
-    const R = [[0, 0], [0, 0]]; for (let i = 0; i < 2; i++) for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) R[a][b] += Ucols[i][a] * V[i][b];
+    // M = B^T A = U S V^T, so the rotation that carries B onto A is R = V U^T, which is the transpose of U V^T
+    const Q = [[0, 0], [0, 0]]; for (let i = 0; i < 2; i++) for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) Q[a][b] += Ucols[i][a] * V[i][b];
+    const R = [[Q[0][0], Q[1][0]], [Q[0][1], Q[1][1]]];
     return B.map((p) => { const x = p[0] - mb[0], y = p[1] - mb[1]; return [R[0][0] * x + R[0][1] * y + ma[0], R[1][0] * x + R[1][1] * y + ma[1]]; });
   };
 

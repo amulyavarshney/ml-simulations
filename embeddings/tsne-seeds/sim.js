@@ -10,7 +10,10 @@
     reveal: 'Same neighbourhoods, different layout. Local structure (who is near whom) is stable; the rotation, the positions of whole clusters and the gaps between them depend on the random start.' });
   const c = UI.panel(side, 'Settings');
   UI.slider(c, { label: 'Perplexity', min: 5, max: 60, step: 1, value: perp, fmt: (v) => String(Math.round(v)), onInput: UI.debounce((v) => { perp = Math.round(v); run(); }, 300) });
-  UI.seg(c, { label: 'Initial positions', options: [{ value: 'random', label: 'Random' }, { value: 'pca', label: 'PCA' }], value: init, onChange(v) { init = v; run(); } });
+  UI.seg(c, { label: 'Initial positions', options: [{ value: 'random', label: 'Random' }, { value: 'pca', label: 'PCA' }], value: init, onChange(v) { init = v; showInitNote(); run(); } });
+  const initNote = UI.note(c, '');
+  const showInitNote = () => { initNote.innerHTML = init === 'random' ? '<b>Random start:</b> each run begins from a different random blob, so the three seeds give three different layouts.' : '<b>PCA start:</b> every run begins from the same PCA positions and the seed is ignored, so the three maps come out <b>identical</b> and agreement reads 1.00. That makes the picture repeatable, not reliable.'; };
+  showInitNote();
   UI.check(c, { label: 'Align maps to run 1 (rotate / flip)', value: false, onChange(v) { align = v; redraw(); }, help: 'Orthogonal Procrustes alignment: removes rotation and reflection only.' });
   EU.speedControl(c);
   UI.buttons(c, [{ label: 'Run again', primary: true, onClick() { seeds.forEach((_, i) => { seeds[i] += 3; }); run(); } }]);
@@ -26,7 +29,7 @@
     if (!done.every(Boolean)) return;
     tw = maps.map((E) => ML.trustworthiness(digits.X, E, 10)); R.set('tw', tw.map((v) => UI.f(v, 3)).join(' · '));
     const d = maps.map((E) => EU.centroidDists(E, digits.y)), r12 = EU.corr(d[0], d[1]), r13 = EU.corr(d[0], d[2]), r23 = EU.corr(d[1], d[2]);
-    R.set('ag', UI.f((r12 + r13 + r23) / 3, 2), (r12 + r13 + r23) / 3 > 0.9 ? 'good' : 'warn'); R.set('ag12', [r12, r13, r23].map((v) => UI.f(v, 2)).join(' / '));
+    R.set('ag', UI.f((r12 + r13 + r23) / 3, 2), (r12 + r13 + r23) / 3 > 0.9 ? 'good' : 'warn'); R.set('ag12', [r12, r13, r23].map((v) => UI.f(v, 2)).join(' / ') + (init === 'pca' ? ' (identical runs)' : ''));
   }
   function run() {
     gen++; const my = gen; runs.forEach((r) => r.stop()); runs = []; done = [false, false, false]; R.set('tw', '…'); R.set('ag', '…'); R.set('ag12', '…');

@@ -29,6 +29,8 @@
   UI.legend(B.card, [{ label: 'bootstrap differences', color: UI.colors().c[0], shape: 'square' }, { label: 'observed difference', color: UI.colors().c[1], shape: 'diamond' }, { label: 'zero', color: UI.colors().ink, shape: 'line' }, { label: '95% interval', color: UI.colors().accent, shape: 'line' }]);
   const bnote = UI.note(B.card, '', 'callout');
 
+  /** a p-value to d decimals; tiny values read "below 0.0001" instead of a misleading 0.0000 */
+  function pv(p, d) { const lim = Math.pow(10, -d); return p < lim ? 'below ' + lim.toFixed(d) : p.toFixed(d); }
   function nice(v) { const x = Math.round(v), mag = Math.pow(10, Math.floor(Math.log10(x))), f = x / mag; const g = f < 1.25 ? 1 : f < 1.75 ? 1.5 : f < 2.5 ? 2 : f < 3.5 ? 3 : f < 4.5 ? 4 : f < 6 ? 5 : f < 8 ? 7 : 10; return Math.round(g * mag); }
   function sync() { real.style.display = mode === 'real' ? '' : 'none'; what.style.display = mode === 'whatif' ? '' : 'none'; }
   function build() {
@@ -49,8 +51,8 @@
     if (!D) return; if (job) job.stop(); boot = null; S = table(); const my = ++gen;
     const exact = ML.mcnemarExact(S.b, S.c), chi = ML.mcnemarChi2(S.b, S.c), accA = (S.both + S.b) / S.n, accB = (S.both + S.c) / S.n, diff = (accA - accB) * 100, sgn = (v) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1);
     tab.set([['A right', { html: '<b>' + DU.n(S.both) + '</b><br><span class="note">both right</span>' }, { html: '<b>' + DU.n(S.b) + '</b><br><span class="note">b: A right, B wrong</span>', cls: 'warn' }], ['A wrong', { html: '<b>' + DU.n(S.c) + '</b><br><span class="note">c: B right, A wrong</span>', cls: 'warn' }, { html: '<b>' + DU.n(S.none) + '</b><br><span class="note">both wrong</span>' }]]);
-    R.set('accA', DU.pct(accA, 1)); R.set('accB', DU.pct(accB, 1)); R.set('diff', sgn(diff) + ' points'); R.set('exact', S.b + S.c ? exact.toFixed(4) : 'no disagreements', exact < 0.05 ? 'good' : ''); R.set('chi', UI.f(chi.stat, 2)); R.set('chip', chi.p.toFixed(4)); R.set('ci', '…');
-    tnote.innerHTML = 'Of <b>' + DU.n(S.n) + '</b> rows the models agree on <b>' + DU.n(S.both + S.none) + '</b>, and those rows play no part in the test. Only <b>b = ' + DU.n(S.b) + '</b> against <b>c = ' + DU.n(S.c) + '</b> counts: the exact p-value is <b>' + exact.toFixed(3) + '</b> (chi-square: ' + chi.p.toFixed(3) + '), so ' + (exact < 0.05 ? 'a split this lopsided would happen less than 1 time in 20 by chance alone.' : 'the data do not show that one model is better.');
+    R.set('accA', DU.pct(accA, 1)); R.set('accB', DU.pct(accB, 1)); R.set('diff', sgn(diff) + ' points'); R.set('exact', S.b + S.c ? pv(exact, 4) : 'no disagreements', exact < 0.05 ? 'good' : ''); R.set('chi', UI.f(chi.stat, 2)); R.set('chip', pv(chi.p, 4)); R.set('ci', '…');
+    tnote.innerHTML = 'Of <b>' + DU.n(S.n) + '</b> rows the models agree on <b>' + DU.n(S.both + S.none) + '</b>, and those rows play no part in the test. Only <b>b = ' + DU.n(S.b) + '</b> against <b>c = ' + DU.n(S.c) + '</b> counts: the exact p-value is <b>' + pv(exact, 3) + '</b> (chi-square: ' + pv(chi.p, 3) + '), so ' + (exact < 0.05 ? 'a split this lopsided would happen less than 1 time in 20 by chance alone.' : 'the data do not show that one model is better.');
     P.plot.redraw(); bnote.innerHTML = 'Resampling…';
     const info = { gap: diff, n: S.n }, rng = ML.rng(seed * 6007 + 11 + mode.length);
     function* g() { let d; yield* ML.bootstrapDiffGen(S.a, S.bv, NBOOT, rng, true, (r) => { d = r; }); if (my !== gen) return; boot = Object.assign(info, { diffs: Array.from(d, (v) => v * 100) }); boot.ci = ML.percentileCI(boot.diffs, 0.95); }
@@ -67,7 +69,7 @@
     const mn = Math.min(S.b, S.c), mxk = Math.max(S.b, S.c); for (let q = lo; q <= hi; q++) { const tail = q <= mn || q >= mxk; p.rect(q - 0.46, 0, q + 0.46, pmf(nn, q), { fill: tail ? col.c[1] : col.c[0], alpha: 0.9 }); }
     p.seg(S.b, 0, S.b, top, { color: col.ink, w: 2 }); p.seg(S.c, 0, S.c, top, { color: col.ink, w: 2, dash: [5, 4] });
     p.text(S.b, top * 0.97, ' b = ' + S.b, { align: S.b >= S.c ? 'left' : 'right', halo: true, weight: 700, dx: S.b >= S.c ? 4 : -4 }); p.text(S.c, top * 0.88, ' c = ' + S.c, { align: S.c > S.b ? 'left' : 'right', halo: true, weight: 700, dx: S.c > S.b ? 4 : -4 });
-    p.setLabel('Binomial distribution of disagreements won by A out of ' + nn + '; observed b ' + S.b + ', c ' + S.c + '; exact p ' + ML.mcnemarExact(S.b, S.c).toFixed(3));
+    p.setLabel('Binomial distribution of disagreements won by A out of ' + nn + '; observed b ' + S.b + ', c ' + S.c + '; exact p ' + pv(ML.mcnemarExact(S.b, S.c), 3));
   };
   P.plot.on('hover', (e) => { if (!S) return; const nn = S.b + S.c, q = Math.round(e.x); if (nn === 0 || q < 0 || q > nn) return UI.tip.hide(); UI.tip.show('<b>A wins ' + DU.n(q) + ' of ' + DU.n(nn) + '</b><br>chance if equally good: ' + (100 * pmf(nn, q)).toFixed(2) + '%', e.cx, e.cy); });
   B.plot.draw = (p) => DU.bootDraw(p, boot, 'A minus B (accuracy points)');

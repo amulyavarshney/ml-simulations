@@ -43,7 +43,7 @@
     xm = ML.svc(XP, XY, { kernel: 'poly', degree: 2, gamma: 1, coef0: xr, C: 1e6, tol: 1e-10 });
     const G = XP.map((p) => XP.map((q) => Math.pow(ML.dot(p, q) + xr, 2)));
     t2.innerHTML = '<p class="note">Gram matrix of the four points with K(x, z) = (x·z + ' + f(xr, 2) + ')²:</p><table class="t"><tbody>' + G.map((row) => '<tr>' + row.map((v) => '<td>' + f(v, 3) + '</td>').join('') + '</tr>').join('') + '</tbody></table>' +
-      '<p class="note">SVM weights α·y: <b>' + Array.from(xm.coefAll).map((v) => f(v, 4)).join(', ') + '</b> · b = <b>' + f(-xm.rho, 4) + '</b> · f at the four points: <b>' + XP.map((p) => f(xm.decision(p), 3)).join(', ') + '</b>' + (Math.abs(xr - 1) < 1e-9 ? '<br>With r = 1 every α is exactly 1/8 and f(x) = x₁·x₂.' : '') + '</p>';
+      '<p class="note">SVM weights α·y: <b>' + Array.from(xm.coefAll).map((v) => f(v, 4)).join(', ') + '</b> · b = <b>' + f(-xm.rho, 4) + '</b> · f at the four points: <b>' + XP.map((p) => f(xm.decision(p), 3)).join(', ') + '</b>' + (xr < 1e-9 ? '<br>At r = 0 the kernel is (x·z)², and (1, 1) and (−1, −1) land on the same lifted point (so do the two orange corners). The weight can sit on either twin: the solver puts the whole 1/4 on one point of each colour, so only two support vectors remain. The fit is unchanged: f(x) = x₁·x₂.' : '<br>For every r above 0 the weights are exactly ±1/8, b = 0 and f(x) = x₁·x₂. Changing r changes the Gram matrix but not the fit.') + '</p>';
     P2.plot.redraw();
   }
   P2.plot.draw = (p) => {

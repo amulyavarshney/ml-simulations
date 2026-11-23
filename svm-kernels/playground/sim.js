@@ -8,7 +8,7 @@
 
   const c = UI.panel(side, 'Data');
   const mode = SU.modeControl(c, 'blue', 'orange', true);
-  UI.select(c, { label: 'Start from', options: SU.options(['moons', 'circles', 'xor', 'spiral', 'overlap', 'blobs']), value: preset, onChange(v) { preset = v; pts = SU.makePts(v, seed); probe = null; update(true); } });
+  UI.select(c, { label: 'Start from', options: SU.options(['moons', 'circles', 'xor', 'spiral', 'overlap', 'blobs']), value: preset, onChange(v) { preset = v; pts = SU.makePts(v, seed); probe = null; gamma = gs(); gS.set(gamma); update(true); } });
   UI.buttons(c, [{ label: 'New sample', onClick() { seed++; pts = SU.makePts(preset, seed); update(true); } }, { label: 'Clear', onClick() { pts = []; probe = null; update(true); } }]);
   const k = UI.panel(side, 'Kernel');
   UI.seg(k, { label: 'Kernel', options: [{ value: 'linear', label: 'Linear' }, { value: 'poly', label: 'Polynomial' }, { value: 'rbf', label: 'RBF' }], value: kernel, onChange(v) { kernel = v; vis(); update(true); } });
@@ -28,7 +28,7 @@
   function update(full) {
     vis(); model = SU.fit(pts, opts());
     R.set('gs', UI.sci(gs()));
-    if (model) { R.set('sv', model.nSV + ' of ' + pts.length); R.set('tr', UI.pct(SU.accuracy(model, pts), 0)); if (full) cvAcc = SU.cv(pts, opts(), 5, 7); R.set('cv', cvAcc == null ? '–' : UI.pct(cvAcc, 0)); } else { R.set('sv', '–'); R.set('tr', '–'); R.set('cv', '–'); }
+    if (model) { R.set('sv', model.nSV + ' of ' + pts.length); R.set('tr', UI.pct(SU.accuracy(model, pts), 0)); if (full) { cvAcc = SU.cv(pts, opts(), 5, 7); R.set('cv', cvAcc == null ? '–' : UI.pct(cvAcc, 0)); } else R.set('cv', cvAcc == null ? '–' : UI.pct(cvAcc, 0) + ' (old: updates when you let go)', 'warn'); } else { R.set('sv', '–'); R.set('tr', '–'); R.set('cv', '–'); }
     paintVote(); ed.plot.redraw();
   }
   function paintVote() {
